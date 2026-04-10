@@ -1,0 +1,13 @@
+---
+description: Next.js and TypeScript conventions
+globs: src/**/*.{ts,tsx}
+alwaysApply: false
+---
+
+# Next.js + TypeScript
+
+- Используй App Router соглашения (`src/app`).
+- Не дублируй логику: общие вещи выноси в `src/lib` и `src/components`.
+- Для UI-компонентов держи читаемые пропсы и явные типы.
+- Для async ошибок на сервере возвращай понятные сообщения и коды.
+- Для клиентских компонентов добавляй `"use client"` только когда реально нужно.

@@ -1,0 +1,14 @@
+---
+description: Core project standards for UISamurai
+alwaysApply: true
+---
+
+# UISamurai Core Rules
+
+- Пиши на TypeScript со строгой типизацией, избегай `any` без причины.
+- Не добавляй секреты в код и репозиторий.
+- Для серверных операций используй Route Handlers или Server Actions.
+- Любые привилегированные операции с Supabase делай только на сервере.
+- Не используй `SUPABASE_SERVICE_ROLE_KEY` в клиентском коде.
+- Сохраняй продуктовые ограничения v1 из `documentacion/product/out-of-scope.md`.
+- Следуй структуре документации из `documentacion/README.md`.
