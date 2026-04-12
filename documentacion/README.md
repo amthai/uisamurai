@@ -8,6 +8,7 @@
 - `setup-local.md` - локальный запуск, переменные окружения.
 - `deploy-vercel.md` - деплой на Vercel на время разработки и тестирования.
 - `mcp-supabase.md` - работа с Supabase через MCP в Cursor.
+- `supabase-schema.sql` - справочная схема БД (миграции в `supabase/migrations/`).
 
 ## Продуктовая
 

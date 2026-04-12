@@ -1,0 +1,64 @@
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.5rem;
+  border-bottom: 1px solid #eee;
+  background: #fafafa;
+}
+
+.toolbarBtn {
+  border: 1px solid #d4d4d4;
+  background: #fff;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.toolbarBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.toolbarBtnActive {
+  border: 1px solid #d4d4d4;
+  background: #e5e5e5;
+  border-radius: 4px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.editorOuter {
+  border: 1px solid #d4d4d4;
+  border-radius: 8px;
+  background: #fff;
+  margin-bottom: 1rem;
+}
+
+.editorInner {
+  min-height: 200px;
+  padding: 0.75rem;
+}
+
+.editorInner :global(.ProseMirror) {
+  outline: none;
+  min-height: 180px;
+}
+
+.editorInner :global(.ProseMirror p.is-editor-empty:first-child::before) {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
