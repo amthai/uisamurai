@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+
+export const dynamic = "force-dynamic";
 import type { JSONContent } from "@tiptap/core";
 import { CommentsSection } from "@/components/trainer/CommentsSection";
 import { RichHtml } from "@/components/trainer/RichHtml";

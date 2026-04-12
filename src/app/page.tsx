@@ -5,6 +5,9 @@ import styles from "@/components/trainer/trainer-shell.module.css";
 import { getSessionUser } from "@/lib/auth/get-session-user";
 import { supabaseServer } from "@/lib/supabase/server";
 
+/** Иначе после деплоя страница могла остаться «пустой» из кэша билда, когда разделов ещё не было. */
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const { data } = await supabaseServer
     .from("sections")
