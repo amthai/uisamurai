@@ -64,6 +64,7 @@ export function SectionForm(props: Props) {
           return;
         }
         if (data.id) {
+          router.refresh();
           router.push(`/admin/sections/${data.id}/edit`);
         }
         return;
