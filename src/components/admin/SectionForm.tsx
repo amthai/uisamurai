@@ -31,7 +31,7 @@ export function SectionForm(props: Props) {
   const [slug, setSlug] = useState(initial?.slug ?? "");
   const [title, setTitle] = useState(initial?.title ?? "");
   const [sortOrder, setSortOrder] = useState(initial?.sort_order ?? 0);
-  const [isPublished, setIsPublished] = useState(initial?.is_published ?? false);
+  const [isPublished, setIsPublished] = useState(props.mode === "edit" ? props.initial.is_published : true);
   const [metaDescription, setMetaDescription] = useState(initial?.meta_description ?? "");
   const [body, setBody] = useState<JSONContent>(initial?.body ?? EMPTY_TIPTAP_DOC);
   const [assignment, setAssignment] = useState<JSONContent>(initial?.assignment ?? EMPTY_TIPTAP_DOC);
