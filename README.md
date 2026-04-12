@@ -27,3 +27,5 @@ npm run dev
 
 Все рабочие документы лежат в `documentacion/`.
 Точка входа: `documentacion/README.md`.
+
+Деплой на время разработки и тестов: `documentacion/deploy-vercel.md`.

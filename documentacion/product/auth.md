@@ -5,6 +5,14 @@
 - Только Telegram Login в v1.
 - Supabase Auth не используется.
 
+## Домен для Telegram Login Widget
+
+Виджет сравнивает **хост страницы** с полем **Domain** у бота (настройки в BotFather / раздел Web Login).
+
+- **`localhost` в BotFather часто недоступен** — интерфейс показывает «Domain is invalid». Это ограничение Telegram, не проекта.
+- Для разработки: **HTTPS-туннель** на `localhost:3000` (ngrok, Cloudflare Tunnel и т.д.) → в Domain указать **хост туннеля** (например `abc123.ngrok-free.app`).
+- Для превью/прода: домен Vercel (`uisamurai.vercel.app`) или свой домен — тот же хост должен быть в BotFather.
+
 ## Что доступно без логина
 
 - Чтение основного контента разделов.

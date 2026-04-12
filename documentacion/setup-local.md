@@ -19,6 +19,19 @@ npm install
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `TELEGRAM_BOT_TOKEN`
+   - `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME`
+
+### Telegram Login и домен
+
+В настройках бота (**Web Login / Domain**) Telegram **часто не принимает `localhost`** — будет ошибка «Domain is invalid». Это нормально.
+
+**Варианты:**
+
+1. **Туннель с HTTPS** (удобно для dev): [ngrok](https://ngrok.com/), Cloudflare Tunnel (`cloudflared`), LocalTunnel и т.п. Поднимаешь `npm run dev`, запускаешь туннель на порт 3000, получаешь хост вида `xxxx.ngrok-free.app`. В BotFather в Domain указываешь **только этот хост** (без `https://`). Страницу открываешь по URL туннеля, не по `localhost`.
+
+2. **Только Vercel**: деплой на `*.vercel.app`, в BotFather — тот же хост. Локально без туннеля виджет Telegram не проверить, остальной UI — на `localhost`.
+
+Подробнее: `product/auth.md`.
 
 ## Запуск
 
@@ -32,3 +45,7 @@ npm run dev
 npm run lint
 npm run build
 ```
+
+## База данных
+
+Перед тестом авторизации выполни SQL из `documentacion/supabase-schema.sql` в Supabase SQL Editor.
