@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./trainer-shell.module.css";
 
 type CommentUser = {
@@ -27,27 +27,82 @@ type Props = {
   currentUserId: string | null;
 };
 
+function patchCommentReactions(
+  list: CommentItem[],
+  commentId: string,
+  type: "like" | "dislike",
+): CommentItem[] {
+  return list.map((c) => {
+    if (c.id !== commentId) return c;
+    const prev = c.my_reaction;
+    let likes = c.likes;
+    let dislikes = c.dislikes;
+    let my: "like" | "dislike" | null = prev;
+
+    if (prev === type) {
+      if (type === "like") likes = Math.max(0, likes - 1);
+      else dislikes = Math.max(0, dislikes - 1);
+      my = null;
+    } else if (prev === "like" || prev === "dislike") {
+      if (type === "like") {
+        likes += 1;
+        if (prev === "dislike") dislikes = Math.max(0, dislikes - 1);
+      } else {
+        dislikes += 1;
+        if (prev === "like") likes = Math.max(0, likes - 1);
+      }
+      my = type;
+    } else {
+      if (type === "like") likes += 1;
+      else dislikes += 1;
+      my = type;
+    }
+    return { ...c, likes, dislikes, my_reaction: my };
+  });
+}
+
+function scrollToCommentNode(id: string) {
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.getElementById(`comment-${id}`)?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    });
+  });
+}
+
 export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props) {
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [loading, setLoading] = useState(isLoggedIn);
+  const [submitting, setSubmitting] = useState(false);
   const [text, setText] = useState("");
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const reactionPending = useRef(new Set<string>());
 
-  const load = useCallback(async () => {
-    if (!isLoggedIn) return;
-    setLoading(true);
-    setError(null);
-    const res = await fetch(`/api/sections/${sectionId}/comments`, { credentials: "include" });
-    if (!res.ok) {
-      setError("Не удалось загрузить комментарии");
-      setLoading(false);
-      return;
-    }
-    const data = (await res.json()) as { comments: CommentItem[] };
-    setComments(data.comments);
-    setLoading(false);
-  }, [isLoggedIn, sectionId]);
+  const load = useCallback(
+    async (opts?: { silent?: boolean }) => {
+      if (!isLoggedIn) return;
+      const silent = opts?.silent ?? false;
+      if (!silent) {
+        setLoading(true);
+      }
+      setError(null);
+      try {
+        const res = await fetch(`/api/sections/${sectionId}/comments`, { credentials: "include" });
+        if (!res.ok) {
+          if (!silent) setError("Не удалось загрузить комментарии");
+          return;
+        }
+        const data = (await res.json()) as { comments: CommentItem[] };
+        setComments(data.comments);
+      } finally {
+        if (!silent) setLoading(false);
+      }
+    },
+    [isLoggedIn, sectionId],
+  );
 
   useEffect(() => {
     void load();
@@ -55,44 +110,65 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
 
   const submit = async () => {
     const trimmed = text.trim();
-    if (!trimmed) return;
+    if (!trimmed || submitting) return;
     setError(null);
-    const res = await fetch(`/api/sections/${sectionId}/comments`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ body: trimmed, parent_id: replyTo }),
-    });
-    if (res.status === 429) {
-      const data = (await res.json()) as { retryAfterSec?: number };
-      setError(`Слишком часто. Попробуй через ${data.retryAfterSec ?? 60} с.`);
-      return;
+    setSubmitting(true);
+    try {
+      const res = await fetch(`/api/sections/${sectionId}/comments`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ body: trimmed, parent_id: replyTo }),
+      });
+      if (res.status === 429) {
+        const data = (await res.json()) as { retryAfterSec?: number };
+        setError(`Слишком часто. Попробуй через ${data.retryAfterSec ?? 60} с.`);
+        return;
+      }
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        setError(data.error ?? "Ошибка отправки");
+        return;
+      }
+      const created = (await res.json()) as { id?: string };
+      setText("");
+      setReplyTo(null);
+      await load({ silent: true });
+      if (created.id) scrollToCommentNode(created.id);
+    } finally {
+      setSubmitting(false);
     }
-    if (!res.ok) {
-      const data = (await res.json()) as { error?: string };
-      setError(data.error ?? "Ошибка отправки");
-      return;
-    }
-    setText("");
-    setReplyTo(null);
-    await load();
   };
 
   const remove = async (id: string) => {
     const res = await fetch(`/api/comments/${id}`, { method: "DELETE", credentials: "include" });
     if (!res.ok) return;
-    await load();
+    await load({ silent: true });
   };
 
   const react = async (commentId: string, type: "like" | "dislike") => {
-    const res = await fetch(`/api/comments/${commentId}/reactions`, {
-      method: "POST",
-      credentials: "include",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ type }),
-    });
-    if (!res.ok) return;
-    await load();
+    if (reactionPending.current.has(commentId)) return;
+    const snapshot = comments.map((c) => ({
+      ...c,
+      user: { ...c.user },
+    }));
+    setComments((list) => patchCommentReactions(list, commentId, type));
+    reactionPending.current.add(commentId);
+    try {
+      const res = await fetch(`/api/comments/${commentId}/reactions`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type }),
+      });
+      if (!res.ok) {
+        setComments(snapshot);
+      }
+    } catch {
+      setComments(snapshot);
+    } finally {
+      reactionPending.current.delete(commentId);
+    }
   };
 
   const roots = comments.filter((c) => !c.parent_id);
@@ -125,17 +201,29 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
               Отменить ответ
             </button>
           )}
-          <button type="button" className={styles.buttonPrimary} onClick={() => void submit()}>
-            Отправить
+          <button
+            type="button"
+            className={styles.buttonPrimary}
+            disabled={submitting || !text.trim()}
+            onClick={() => void submit()}
+          >
+            {submitting ? "Отправка…" : "Отправить"}
           </button>
         </div>
       </div>
       {loading ? (
-        <p className={styles.muted}>Загрузка…</p>
+        <div className={styles.commentSkeletonList} aria-busy="true" aria-label="Загрузка комментариев">
+          <div className={styles.commentSkeleton} />
+          <div className={styles.commentSkeleton} />
+          <div className={styles.commentSkeleton} />
+        </div>
       ) : (
         <ul className={styles.commentList}>
+          {roots.length === 0 ? (
+            <li className={styles.commentEmpty}>Пока нет комментариев — будь первым.</li>
+          ) : null}
           {roots.map((c) => (
-            <li key={c.id} className={styles.commentItem}>
+            <li key={c.id} id={`comment-${c.id}`} className={styles.commentItem}>
               <div className={styles.commentHead}>
                 <strong>{c.user.first_name}</strong>
                 {c.user.username ? <span className={styles.muted}> @{c.user.username}</span> : null}
@@ -170,7 +258,7 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
                 {replies
                   .filter((r) => r.parent_id === c.id)
                   .map((r) => (
-                    <li key={r.id} className={styles.replyItem}>
+                    <li key={r.id} id={`comment-${r.id}`} className={styles.replyItem}>
                       <div className={styles.commentHead}>
                         <strong>{r.user.first_name}</strong>
                         {r.user.username ? <span className={styles.muted}> @{r.user.username}</span> : null}
