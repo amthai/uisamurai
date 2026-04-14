@@ -21,9 +21,15 @@ type SectionRow = {
 };
 
 type Props = { params: Promise<{ slug: string }> };
+type MetadataRow = { title: string; meta_description: string | null; seo_title?: string | null };
+type PublicSectionRow = Omit<SectionRow, "seo_title"> & { seo_title?: string | null };
 
 function isMissingColumnError(error: { message?: string } | null, column: "seo_title"): boolean {
   return Boolean(error?.message?.includes(`column sections.${column} does not exist`));
+}
+
+function resolveSeoTitle(input: { title: string; seo_title?: string | null }): string {
+  return (input.seo_title ?? "").trim() || input.title;
 }
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
@@ -43,13 +49,13 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
           .eq("is_published", true)
           .maybeSingle<{ title: string; meta_description: string | null }>()
       : null;
-  const data = preferred.error && fallback ? fallback.data : preferred.data;
+  const data: MetadataRow | null = preferred.error && fallback ? fallback.data : preferred.data;
 
   if (!data) {
     return { title: "Раздел не найден" };
   }
 
-  const seoTitle = "seo_title" in data ? (data.seo_title ?? "").trim() || data.title : data.title;
+  const seoTitle = resolveSeoTitle(data);
 
   return {
     title: `${seoTitle} · UISamurai`,
@@ -79,7 +85,7 @@ export default async function TrainerSectionPage(props: Props) {
           .eq("is_published", true)
           .maybeSingle<Omit<SectionRow, "seo_title">>()
       : null;
-  const section = preferred.error && fallback ? fallback.data : preferred.data;
+  const section: PublicSectionRow | null = preferred.error && fallback ? fallback.data : preferred.data;
   const error = preferred.error && fallback ? fallback.error : preferred.error;
 
   if (error || !section) {
@@ -89,7 +95,7 @@ export default async function TrainerSectionPage(props: Props) {
   const user = await getSessionUser();
   const theoryHtml = tiptapJsonToHtml(section.body);
   const assignmentHtml = user ? tiptapJsonToHtml(section.assignment) : null;
-  const h1Title = "seo_title" in section ? (section.seo_title ?? "").trim() || section.title : section.title;
+  const h1Title = resolveSeoTitle(section);
 
   return (
     <article>
