@@ -44,7 +44,7 @@ export function TrainerHeader() {
   }, []);
 
   useEffect(() => {
-    if (!botUsername) return;
+    if (!botUsername || currentUser) return;
 
     window.onTelegramAuth = async (user: TelegramUserPayload) => {
       setError(null);
@@ -82,9 +82,13 @@ export function TrainerHeader() {
     }
 
     return () => {
+      const container = document.getElementById("telegram-login-widget");
+      if (container) {
+        container.innerHTML = "";
+      }
       delete window.onTelegramAuth;
     };
-  }, []);
+  }, [currentUser]);
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
