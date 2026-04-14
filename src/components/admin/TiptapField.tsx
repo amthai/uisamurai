@@ -173,7 +173,7 @@ export function TiptapField({ label, value, onChange, placeholder }: Props) {
           </button>
         </div>
         <p className={styles.dragHint}>
-          Маркер ⋮⋮ слева или кнопки ↑↓ — меняй порядок блоков (текст, заголовки, картинки).
+          Наведи на блок — слева появится ⋮⋮, тащи; либо ↑↓ по активному блоку.
         </p>
         <EditorContent editor={editor} className={styles.editorInner} />
       </div>

@@ -73,14 +73,28 @@
   height: auto;
 }
 
-/* Селектор должен включать локальный класс — иначе Next/CSS Modules падает на build (pure selectors). */
+/*
+ * Плагин задаёт left/top через getBoundingClientRect() — это координаты viewport,
+ * без position: fixed маркер оказывается в конце потока (внизу поля).
+ */
 .editorOuter :global(.drag-handle) {
+  position: fixed;
+  z-index: 40;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
   width: 16px;
   min-height: 18px;
   border-radius: 4px;
-  opacity: 0.5;
+  opacity: 0.55;
   cursor: grab;
   transition: opacity 0.15s ease;
+}
+
+.editorOuter :global(.drag-handle.hide) {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
 }
 
 .editorOuter :global(.drag-handle:hover) {

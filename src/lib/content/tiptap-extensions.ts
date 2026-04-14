@@ -4,9 +4,13 @@ import Placeholder from "@tiptap/extension-placeholder";
 import { StarterKit } from "@tiptap/starter-kit";
 import GlobalDragHandle from "tiptap-extension-global-drag-handle";
 
+/** Для tiptap-extension-global-drag-handle (селектор [data-type=…]), иначе img/первый абзац не ловятся. */
 const baseExtensions = () => [
   StarterKit.configure({
     heading: { levels: [1, 2, 3] },
+    paragraph: {
+      HTMLAttributes: { "data-type": "paragraph" },
+    },
     bulletList: { HTMLAttributes: { class: "tiptap-bullet-list" } },
     orderedList: { HTMLAttributes: { class: "tiptap-ordered-list" } },
     blockquote: { HTMLAttributes: { class: "tiptap-blockquote" } },
@@ -18,7 +22,7 @@ const baseExtensions = () => [
   }),
   Image.configure({
     allowBase64: false,
-    HTMLAttributes: { class: "tiptap-image" },
+    HTMLAttributes: { class: "tiptap-image", "data-type": "image" },
   }),
 ];
 
@@ -36,6 +40,7 @@ export function getEditorExtensions(placeholder?: string) {
     : null;
   const dragHandle = GlobalDragHandle.configure({
     dragHandleWidth: 20,
+    customNodes: ["image", "paragraph"],
   });
   return ph ? [...baseExtensions(), ph, dragHandle] : [...baseExtensions(), dragHandle];
 }

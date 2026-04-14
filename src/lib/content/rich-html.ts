@@ -23,7 +23,8 @@ export function tiptapJsonToHtml(doc: JSONContent | null | undefined): string {
     ]),
     allowedAttributes: {
       ...sanitizeHtml.defaults.allowedAttributes,
-      img: ["src", "alt", "title", "class", "width", "height"],
+      p: ["class", "data-type"],
+      img: ["src", "alt", "title", "class", "width", "height", "data-type"],
       a: ["href", "name", "target", "rel", "class"],
       code: ["class"],
     },
