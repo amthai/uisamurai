@@ -39,6 +39,8 @@ export async function POST(request: Request) {
   const json = (await request.json()) as {
     slug?: string;
     title?: string;
+    nav_title?: string | null;
+    seo_title?: string | null;
     sort_order?: number;
     is_published?: boolean;
     body?: unknown;
@@ -54,6 +56,8 @@ export async function POST(request: Request) {
 
   const sort_order = typeof json.sort_order === "number" && Number.isFinite(json.sort_order) ? json.sort_order : 0;
   const is_published = Boolean(json.is_published);
+  const nav_title = typeof json.nav_title === "string" ? json.nav_title.trim() || null : null;
+  const seo_title = typeof json.seo_title === "string" ? json.seo_title.trim() || null : null;
   const body = parseDoc(json.body);
   const assignment = parseDoc(json.assignment);
   const meta_description =
@@ -64,6 +68,8 @@ export async function POST(request: Request) {
     .insert({
       slug,
       title,
+      nav_title,
+      seo_title,
       sort_order,
       is_published,
       body,

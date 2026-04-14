@@ -54,6 +54,8 @@ export async function PATCH(
   const json = (await request.json()) as {
     slug?: string;
     title?: string;
+    nav_title?: string | null;
+    seo_title?: string | null;
     sort_order?: number;
     is_published?: boolean;
     body?: unknown;
@@ -76,6 +78,12 @@ export async function PATCH(
       return NextResponse.json({ error: "Invalid title" }, { status: 400 });
     }
     patch.title = title;
+  }
+  if (json.nav_title !== undefined) {
+    patch.nav_title = typeof json.nav_title === "string" ? json.nav_title.trim() || null : null;
+  }
+  if (json.seo_title !== undefined) {
+    patch.seo_title = typeof json.seo_title === "string" ? json.seo_title.trim() || null : null;
   }
   if (json.sort_order !== undefined) {
     if (typeof json.sort_order !== "number" || !Number.isFinite(json.sort_order)) {

@@ -27,6 +27,8 @@ export default async function EditSectionPage(props: Props) {
     id: row.id as string,
     slug: row.slug as string,
     title: row.title as string,
+    nav_title: (row.nav_title as string | null) ?? null,
+    seo_title: (row.seo_title as string | null) ?? null,
     sort_order: row.sort_order as number,
     is_published: row.is_published as boolean,
     body: parseDoc(row.body),

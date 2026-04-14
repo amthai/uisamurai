@@ -13,6 +13,8 @@ export type SectionInitial = {
   id: string;
   slug: string;
   title: string;
+  nav_title: string | null;
+  seo_title: string | null;
   sort_order: number;
   is_published: boolean;
   body: JSONContent;
@@ -30,6 +32,8 @@ export function SectionForm(props: Props) {
 
   const [slug, setSlug] = useState(initial?.slug ?? "");
   const [title, setTitle] = useState(initial?.title ?? "");
+  const [navTitle, setNavTitle] = useState(initial?.nav_title ?? "");
+  const [seoTitle, setSeoTitle] = useState(initial?.seo_title ?? "");
   const [sortOrder, setSortOrder] = useState(initial?.sort_order ?? 0);
   const [isPublished, setIsPublished] = useState(props.mode === "edit" ? props.initial.is_published : true);
   const [metaDescription, setMetaDescription] = useState(initial?.meta_description ?? "");
@@ -51,6 +55,8 @@ export function SectionForm(props: Props) {
           body: JSON.stringify({
             slug,
             title,
+            nav_title: navTitle.trim() || null,
+            seo_title: seoTitle.trim() || null,
             sort_order: sortOrder,
             is_published: isPublished,
             body,
@@ -78,6 +84,8 @@ export function SectionForm(props: Props) {
         body: JSON.stringify({
           slug,
           title,
+          nav_title: navTitle.trim() || null,
+          seo_title: seoTitle.trim() || null,
           sort_order: sortOrder,
           is_published: isPublished,
           body,
@@ -132,6 +140,28 @@ export function SectionForm(props: Props) {
       <div className={styles.formField}>
         <label htmlFor="title">Заголовок</label>
         <input id="title" type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
+      </div>
+
+      <div className={styles.formField}>
+        <label htmlFor="nav_title">Заголовок в меню (nav_title)</label>
+        <input
+          id="nav_title"
+          type="text"
+          value={navTitle}
+          onChange={(e) => setNavTitle(e.target.value)}
+          placeholder="Короткий заголовок для бокового меню"
+        />
+      </div>
+
+      <div className={styles.formField}>
+        <label htmlFor="seo_title">SEO/H1 заголовок (seo_title)</label>
+        <input
+          id="seo_title"
+          type="text"
+          value={seoTitle}
+          onChange={(e) => setSeoTitle(e.target.value)}
+          placeholder="Подробный заголовок страницы для SEO"
+        />
       </div>
 
       <div className={styles.formField}>

@@ -14,6 +14,7 @@ import { supabaseServer } from "@/lib/supabase/server";
 type SectionRow = {
   id: string;
   title: string;
+  seo_title: string | null;
   body: JSONContent;
   assignment: JSONContent;
   meta_description: string | null;
@@ -21,24 +22,40 @@ type SectionRow = {
 
 type Props = { params: Promise<{ slug: string }> };
 
+function isMissingColumnError(error: { message?: string } | null, column: "seo_title"): boolean {
+  return Boolean(error?.message?.includes(`column sections.${column} does not exist`));
+}
+
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const { slug } = await props.params;
-  const { data } = await supabaseServer
+  const preferred = await supabaseServer
     .from("sections")
-    .select("title, meta_description")
+    .select("title, seo_title, meta_description")
     .eq("slug", slug)
     .eq("is_published", true)
-    .maybeSingle<{ title: string; meta_description: string | null }>();
+    .maybeSingle<{ title: string; seo_title: string | null; meta_description: string | null }>();
+  const fallback =
+    preferred.error && isMissingColumnError(preferred.error, "seo_title")
+      ? await supabaseServer
+          .from("sections")
+          .select("title, meta_description")
+          .eq("slug", slug)
+          .eq("is_published", true)
+          .maybeSingle<{ title: string; meta_description: string | null }>()
+      : null;
+  const data = preferred.error && fallback ? fallback.data : preferred.data;
 
   if (!data) {
     return { title: "Раздел не найден" };
   }
 
+  const seoTitle = "seo_title" in data ? (data.seo_title ?? "").trim() || data.title : data.title;
+
   return {
-    title: `${data.title} · UISamurai`,
-    description: data.meta_description ?? `Раздел «${data.title}» — UI-тренажёр UISamurai.`,
+    title: `${seoTitle} · UISamurai`,
+    description: data.meta_description ?? `Раздел «${seoTitle}» — UI-тренажёр UISamurai.`,
     openGraph: {
-      title: data.title,
+      title: seoTitle,
       description: data.meta_description ?? undefined,
     },
   };
@@ -47,12 +64,23 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
 export default async function TrainerSectionPage(props: Props) {
   const { slug } = await props.params;
 
-  const { data: section, error } = await supabaseServer
+  const preferred = await supabaseServer
     .from("sections")
-    .select("id, title, body, assignment, meta_description")
+    .select("id, title, seo_title, body, assignment, meta_description")
     .eq("slug", slug)
     .eq("is_published", true)
     .maybeSingle<SectionRow>();
+  const fallback =
+    preferred.error && isMissingColumnError(preferred.error, "seo_title")
+      ? await supabaseServer
+          .from("sections")
+          .select("id, title, body, assignment, meta_description")
+          .eq("slug", slug)
+          .eq("is_published", true)
+          .maybeSingle<Omit<SectionRow, "seo_title">>()
+      : null;
+  const section = preferred.error && fallback ? fallback.data : preferred.data;
+  const error = preferred.error && fallback ? fallback.error : preferred.error;
 
   if (error || !section) {
     notFound();
@@ -61,11 +89,12 @@ export default async function TrainerSectionPage(props: Props) {
   const user = await getSessionUser();
   const theoryHtml = tiptapJsonToHtml(section.body);
   const assignmentHtml = user ? tiptapJsonToHtml(section.assignment) : null;
+  const h1Title = "seo_title" in section ? (section.seo_title ?? "").trim() || section.title : section.title;
 
   return (
     <article>
       <header className={styles.hero}>
-        <h1 className={styles.h1}>{section.title}</h1>
+        <h1 className={styles.h1}>{h1Title}</h1>
       </header>
 
       <section aria-label="Теория">
