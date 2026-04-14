@@ -73,7 +73,8 @@
   height: auto;
 }
 
-:global(.drag-handle) {
+/* Селектор должен включать локальный класс — иначе Next/CSS Modules падает на build (pure selectors). */
+.editorOuter :global(.drag-handle) {
   width: 16px;
   min-height: 18px;
   border-radius: 4px;
@@ -82,12 +83,12 @@
   transition: opacity 0.15s ease;
 }
 
-:global(.drag-handle:hover) {
+.editorOuter :global(.drag-handle:hover) {
   background: #e5e7eb;
   opacity: 1;
 }
 
-:global(.drag-handle::after) {
+.editorOuter :global(.drag-handle::after) {
   content: "⋮⋮";
   display: block;
   font-size: 12px;
