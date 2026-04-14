@@ -12,15 +12,10 @@ export function tiptapJsonToHtml(doc: JSONContent | null | undefined): string {
       : { type: "doc", content: [{ type: "paragraph" }] };
   const raw = generateHTML(safeDoc, extensions);
   return sanitizeHtml(raw, {
-    allowedTags: sanitizeHtml.defaults.allowedTags.concat([
-      "h1",
-      "h2",
-      "h3",
-      "img",
-      "span",
-      "del",
-      "ins",
-    ]),
+    allowedTags: sanitizeHtml.defaults.allowedTags.concat(["h2", "h3", "img", "span", "del", "ins"]),
+    transformTags: {
+      h1: "h2",
+    },
     allowedAttributes: {
       ...sanitizeHtml.defaults.allowedAttributes,
       p: ["class", "data-type"],

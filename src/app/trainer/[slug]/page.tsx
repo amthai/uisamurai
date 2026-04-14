@@ -65,7 +65,6 @@ export default async function TrainerSectionPage(props: Props) {
   return (
     <article>
       <header className={styles.hero}>
-        <p className={styles.heroLabel}>Раздел</p>
         <h1 className={styles.h1}>{section.title}</h1>
       </header>
 

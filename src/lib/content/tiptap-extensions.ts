@@ -7,7 +7,7 @@ import GlobalDragHandle from "tiptap-extension-global-drag-handle";
 /** Для tiptap-extension-global-drag-handle (селектор [data-type=…]), иначе img/первый абзац не ловятся. */
 const baseExtensions = () => [
   StarterKit.configure({
-    heading: { levels: [1, 2, 3] },
+    heading: { levels: [2, 3] },
     paragraph: {
       HTMLAttributes: { "data-type": "paragraph" },
     },

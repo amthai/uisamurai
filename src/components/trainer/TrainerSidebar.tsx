@@ -102,7 +102,6 @@ export function TrainerSidebar({ sections: initialSections }: Props) {
         style={isPinned ? { left: `${pinnedLeft}px`, width: `${pinnedWidth}px` } : undefined}
         aria-label="Разделы тренажёра"
       >
-        <p className={styles.sidebarTitle}>Разделы</p>
         <ul className={styles.navList}>
           {sections.map((s) => (
             <li key={s.slug}>

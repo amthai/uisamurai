@@ -24,7 +24,7 @@ export default async function TrainerLayout({ children }: { children: React.Reac
       <TrainerHeader initialUser={currentUser} />
       <section className={styles.cover} aria-label="Обложка тренажёра">
         <div className={styles.coverInner}>
-          <h1 className={styles.coverTitle}>UI ТРЕНАЖЕР</h1>
+          <p className={styles.coverTitle}>UI ТРЕНАЖЕР</p>
           <p className={styles.coverSubtitle}>
             Прокачай свой визуал, чтобы делать эстетичные и интересные макеты: читай короткую теорию,
             выполняй задания, общайся в комментах и постепенно выходи на новый уровень.
