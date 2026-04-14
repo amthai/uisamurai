@@ -2,19 +2,19 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: #fafafa;
+  background: #f0f0f0;
   color: #171717;
 }
 
 .header {
   border-bottom: 1px solid #e5e5e5;
-  background: #fff;
+  background: #f0f0f0;
 }
 
 .headerInner {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1rem 1.25rem;
+  padding: 1.5rem 1.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -22,16 +22,52 @@
   flex-wrap: wrap;
 }
 
+.cover {
+  background: #f0f0f0;
+}
+
+.coverInner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 8rem 1.25rem 4rem;
+  text-align: center;
+}
+
+.coverTitle {
+  margin: 0;
+  font-size: clamp(2.4rem, 8vw, 6rem);
+  line-height: 1.04;
+  letter-spacing: 0.02em;
+  font-weight: 800;
+  font-family: var(--font-benzin), "Arial Black", sans-serif;
+  text-transform: uppercase;
+}
+
+.coverSubtitle {
+  max-width: 920px;
+  margin: 1.25rem auto 0;
+  font-size: clamp(1rem, 2.2vw, 2rem);
+  line-height: 1.1;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
 .brand {
   display: flex;
-  flex-direction: column;
-  gap: 0.15rem;
+  align-items: center;
+}
+
+.brandLogo {
+  width: min(280px, 56vw);
+  height: auto;
+  display: block;
 }
 
 .brandTitle {
   font-size: 1.1rem;
   font-weight: 700;
   letter-spacing: 0.04em;
+  font-family: var(--font-benzin), "Arial Black", sans-serif;
 }
 
 .brandSub {
@@ -99,29 +135,69 @@
 
 .body {
   flex: 1;
-  display: grid;
-  grid-template-columns: minmax(200px, 260px) 1fr;
+  display: flex;
+  align-items: start;
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
-  gap: 0;
+  gap: 1.25rem;
+  padding: 1.5rem 1.25rem 0;
 }
 
-@media (max-width: 800px) {
+.sidebarAnchor {
+  align-self: start;
+  flex: 0 0 260px;
+}
+
+@media (max-width: 1000px) {
+  .coverInner {
+    padding: 4rem 1.25rem 2rem;
+    text-align: left;
+  }
+
+  .coverSubtitle {
+    margin: 1rem 0 0;
+  }
+
   .body {
-    grid-template-columns: 1fr;
+    display: block;
+    padding-top: 1rem;
   }
 
   .sidebar {
-    border-right: none;
-    border-bottom: 1px solid #e5e5e5;
+    position: static;
+    border: 1px solid #e5e5e5;
+    margin-bottom: 0.25rem;
+    max-height: none;
+    height: auto;
+  }
+
+  .sidebarAnchor {
+    width: 100%;
+  }
+
+  .sidebarPinned {
+    position: static;
+    top: auto;
   }
 }
 
 .sidebar {
-  border-right: 1px solid #e5e5e5;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  max-height: calc(100vh - 2rem);
+  border: 1px solid #e5e5e5;
+  border-radius: 20px;
   padding: 1.25rem 1rem;
   background: #fff;
+}
+
+.sidebarPinned {
+  position: fixed;
+  top: 1rem;
+  z-index: 30;
 }
 
 .sidebarTitle {
@@ -162,8 +238,10 @@
 }
 
 .main {
-  padding: 1.5rem 1.25rem 3rem;
-  background: #fafafa;
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 1rem 0 3rem;
+  background: #f0f0f0;
 }
 
 .hero {
@@ -388,7 +466,7 @@
 /* Admin */
 .adminShell {
   min-height: 100vh;
-  background: #fafafa;
+  background: #f0f0f0;
 }
 
 .adminBar {

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import styles from "./trainer-shell.module.css";
 
 type TelegramUserPayload = {
@@ -107,8 +108,14 @@ export function TrainerHeader({ initialUser = null }: Props) {
     <header className={styles.header}>
       <div className={styles.headerInner}>
         <Link href="/" className={styles.brand}>
-          <span className={styles.brandTitle}>UI ТРЕНАЖЁР</span>
-          <span className={styles.brandSub}>UISamurai</span>
+          <Image
+            src="/logo.svg"
+            alt="UISamurai"
+            width={340}
+            height={40}
+            priority
+            className={styles.brandLogo}
+          />
         </Link>
         <div className={styles.auth}>
           {error && <span className={styles.authError}>{error}</span>}
