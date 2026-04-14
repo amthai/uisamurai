@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./trainer-shell.module.css";
 
 export type SidebarSection = {
@@ -17,11 +17,26 @@ type Props = {
 export function TrainerSidebar({ sections: initialSections }: Props) {
   const pathname = usePathname();
   const [sections, setSections] = useState(initialSections);
+  const hasMountedRef = useRef(false);
 
   useEffect(() => {
+    setSections(initialSections);
+  }, [initialSections]);
+
+  useEffect(() => {
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+
     let cancelled = false;
-    void fetch("/api/trainer/nav")
-      .then((r) => r.json() as Promise<{ sections?: SidebarSection[] }>)
+    void fetch("/api/trainer/nav", { cache: "no-store", credentials: "same-origin" })
+      .then(async (r) => {
+        if (!r.ok) {
+          throw new Error("Failed to refresh navigation");
+        }
+        return (await r.json()) as { sections?: SidebarSection[] };
+      })
       .then((d) => {
         if (!cancelled && Array.isArray(d.sections)) {
           setSections(d.sections);

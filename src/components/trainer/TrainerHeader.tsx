@@ -14,12 +14,16 @@ type TelegramUserPayload = {
   hash: string;
 };
 
-type CurrentUser = {
+export type CurrentUser = {
   id: string;
   first_name: string;
   last_name: string | null;
   username: string | null;
   is_admin: boolean;
+};
+
+type Props = {
+  initialUser?: CurrentUser | null;
 };
 
 declare global {
@@ -30,18 +34,22 @@ declare global {
 
 const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME;
 
-export function TrainerHeader() {
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+export function TrainerHeader({ initialUser = null }: Props) {
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(initialUser);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (initialUser) {
+      return;
+    }
+
     const fetchCurrentUser = async () => {
       const response = await fetch("/api/auth/me", { credentials: "include" });
       const data = (await response.json()) as { user: CurrentUser | null };
       setCurrentUser(data.user);
     };
     void fetchCurrentUser();
-  }, []);
+  }, [initialUser]);
 
   useEffect(() => {
     if (!botUsername || currentUser) return;

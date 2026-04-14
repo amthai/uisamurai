@@ -7,7 +7,14 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const sections = await getPublishedSectionsNav();
-    return NextResponse.json({ sections });
+    return NextResponse.json(
+      { sections },
+      {
+        headers: {
+          "Cache-Control": "private, no-store, max-age=0, must-revalidate",
+        },
+      },
+    );
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to load sections";
     return NextResponse.json({ error: message }, { status: 500 });

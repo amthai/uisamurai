@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { TrainerHeader } from "@/components/trainer/TrainerHeader";
+import { TrainerHeader, type CurrentUser } from "@/components/trainer/TrainerHeader";
 import styles from "@/components/trainer/trainer-shell.module.css";
 import { getSessionUser } from "@/lib/auth/get-session-user";
 import { supabaseServer } from "@/lib/supabase/server";
@@ -22,6 +22,15 @@ export default async function HomePage() {
   }
 
   const user = await getSessionUser();
+  const currentUser: CurrentUser | null = user
+    ? {
+        id: user.id,
+        first_name: user.first_name,
+        last_name: user.last_name,
+        username: user.username,
+        is_admin: user.is_admin,
+      }
+    : null;
   let draftHint = false;
   if (user?.is_admin) {
     const { count } = await supabaseServer
@@ -32,7 +41,7 @@ export default async function HomePage() {
 
   return (
     <div className={styles.shell}>
-      <TrainerHeader />
+      <TrainerHeader initialUser={currentUser} />
       <main className={styles.emptyState}>
         <p className={styles.heroLabel}>UISamurai</p>
         <h1 className={styles.h1}>Пока нет опубликованных разделов</h1>
