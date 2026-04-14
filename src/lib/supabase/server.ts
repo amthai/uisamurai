@@ -9,7 +9,7 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
 
 type NextFetchInit = RequestInit & {
   next?: {
-    revalidate?: number;
+    revalidate?: number | false;
     tags?: string[];
   };
 };
@@ -25,10 +25,6 @@ export const supabaseServer = createClient(supabaseUrl, supabaseServiceRoleKey, 
       fetch(input, {
         ...init,
         cache: "no-store",
-        next: {
-          ...init?.next,
-          revalidate: 0,
-        },
       }),
   },
 });
