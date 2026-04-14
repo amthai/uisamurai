@@ -57,6 +57,43 @@
   outline: none;
   min-height: 180px;
   padding-left: 1.5rem;
+  line-height: 1.65;
+  font-size: 1rem;
+}
+
+.editorInner :global(.ProseMirror h1) {
+  font-size: 1.5rem;
+  margin: 1.25rem 0 0.75rem;
+  font-weight: 700;
+}
+
+.editorInner :global(.ProseMirror h2) {
+  font-size: 1.25rem;
+  margin: 1.1rem 0 0.6rem;
+  font-weight: 600;
+}
+
+.editorInner :global(.ProseMirror h3) {
+  font-size: 1.1rem;
+  margin: 1rem 0 0.5rem;
+  font-weight: 600;
+}
+
+.editorInner :global(.ProseMirror p) {
+  margin: 0.65rem 0;
+}
+
+.editorInner :global(.ProseMirror ul),
+.editorInner :global(.ProseMirror ol) {
+  margin: 0.65rem 0;
+  padding-left: 1.35rem;
+}
+
+.editorInner :global(.ProseMirror blockquote) {
+  margin: 0.85rem 0;
+  padding-left: 1rem;
+  border-left: 3px solid #d4d4d4;
+  opacity: 0.95;
 }
 
 .editorInner :global(.ProseMirror p.is-editor-empty:first-child::before) {
@@ -71,6 +108,13 @@
   display: block;
   max-width: 100%;
   height: auto;
+  border-radius: 8px;
+  margin: 0.75rem 0;
+}
+
+.editorInner :global(.ProseMirror a) {
+  color: #2563eb;
+  text-decoration: underline;
 }
 
 /*
