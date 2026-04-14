@@ -7,6 +7,7 @@ import { supabaseServer } from "@/lib/supabase/server";
 
 /** Иначе после деплоя страница могла остаться «пустой» из кэша билда, когда разделов ещё не было. */
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 export default async function HomePage() {
   const { data } = await supabaseServer

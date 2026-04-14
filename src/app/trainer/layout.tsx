@@ -5,6 +5,7 @@ import { getSessionUser } from "@/lib/auth/get-session-user";
 import { getPublishedSectionsNav } from "@/lib/content/published-sections";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 export default async function TrainerLayout({ children }: { children: React.ReactNode }) {
   const [nav, sessionUser] = await Promise.all([getPublishedSectionsNav(), getSessionUser()]);

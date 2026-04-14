@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 import type { JSONContent } from "@tiptap/core";
 import { CommentsSection } from "@/components/trainer/CommentsSection";
 import { RichHtml } from "@/components/trainer/RichHtml";

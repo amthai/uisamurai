@@ -59,6 +59,7 @@ export function TrainerSidebar({ sections: initialSections }: Props) {
           <li key={s.slug}>
             <Link
               href={`/trainer/${s.slug}`}
+              prefetch={false}
               className={s.slug === currentSlug ? styles.navLinkActive : styles.navLink}
             >
               {s.title}

@@ -7,9 +7,28 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
   throw new Error("Missing Supabase server environment variables");
 }
 
+type NextFetchInit = RequestInit & {
+  next?: {
+    revalidate?: number;
+    tags?: string[];
+  };
+};
+
 export const supabaseServer = createClient(supabaseUrl, supabaseServiceRoleKey, {
   auth: {
     persistSession: false,
     autoRefreshToken: false,
+  },
+  global: {
+    // Disables Next fetch cache for DB reads to avoid stale sections after admin mutations.
+    fetch: (input: RequestInfo | URL, init?: NextFetchInit) =>
+      fetch(input, {
+        ...init,
+        cache: "no-store",
+        next: {
+          ...init?.next,
+          revalidate: 0,
+        },
+      }),
   },
 });

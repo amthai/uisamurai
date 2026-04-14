@@ -99,14 +99,18 @@ export function SectionForm(props: Props) {
   const remove = async () => {
     if (props.mode !== "edit") return;
     if (!window.confirm("Удалить раздел и связанные комментарии?")) return;
+    setError(null);
     const res = await fetch(`/api/admin/sections/${props.initial.id}`, {
       method: "DELETE",
       credentials: "include",
     });
-    if (res.ok) {
-      router.push("/admin");
-      router.refresh();
+    if (!res.ok) {
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      setError(data.error ?? "Не удалось удалить раздел");
+      return;
     }
+    router.push("/admin");
+    router.refresh();
   };
 
   return (
