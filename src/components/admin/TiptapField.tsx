@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { EditorContent, useEditor } from "@tiptap/react";
 import type { JSONContent } from "@tiptap/core";
 import { getEditorExtensions } from "@/lib/content/tiptap-extensions";
+import { canMoveBlockDown, canMoveBlockUp, moveBlockDown, moveBlockUp } from "@/lib/content/move-block";
 import styles from "./admin-editor.module.css";
 
 type Props = {
@@ -151,8 +152,29 @@ export function TiptapField({ label, value, onChange, placeholder }: Props) {
           <button type="button" className={styles.toolbarBtn} onClick={() => void onUploadPick()}>
             Картинка
           </button>
+          <span className={styles.toolbarSep} aria-hidden />
+          <button
+            type="button"
+            className={styles.toolbarBtn}
+            title="Переместить блок вверх"
+            disabled={!canMoveBlockUp(editor)}
+            onClick={() => moveBlockUp(editor)}
+          >
+            ↑
+          </button>
+          <button
+            type="button"
+            className={styles.toolbarBtn}
+            title="Переместить блок вниз"
+            disabled={!canMoveBlockDown(editor)}
+            onClick={() => moveBlockDown(editor)}
+          >
+            ↓
+          </button>
         </div>
-        <p className={styles.dragHint}>Перетаскивай блоки за маркер ⋮⋮ слева от строки.</p>
+        <p className={styles.dragHint}>
+          Маркер ⋮⋮ слева или кнопки ↑↓ — меняй порядок блоков (текст, заголовки, картинки).
+        </p>
         <EditorContent editor={editor} className={styles.editorInner} />
       </div>
     </div>

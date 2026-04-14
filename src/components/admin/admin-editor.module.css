@@ -1,10 +1,19 @@
 .toolbar {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.35rem;
   padding: 0.5rem;
   border-bottom: 1px solid #eee;
   background: #fafafa;
+}
+
+.toolbarSep {
+  width: 1px;
+  align-self: stretch;
+  min-height: 1.25rem;
+  margin: 0 0.15rem;
+  background: #d4d4d4;
 }
 
 .toolbarBtn {
@@ -36,6 +45,7 @@
   border-radius: 8px;
   background: #fff;
   margin-bottom: 1rem;
+  overflow: visible;
 }
 
 .editorInner {
@@ -46,7 +56,7 @@
 .editorInner :global(.ProseMirror) {
   outline: none;
   min-height: 180px;
-  padding-left: 0.5rem;
+  padding-left: 1.5rem;
 }
 
 .editorInner :global(.ProseMirror p.is-editor-empty:first-child::before) {
@@ -63,19 +73,21 @@
   height: auto;
 }
 
-.editorInner :global(.drag-handle) {
+:global(.drag-handle) {
   width: 16px;
+  min-height: 18px;
   border-radius: 4px;
   opacity: 0.5;
   cursor: grab;
+  transition: opacity 0.15s ease;
 }
 
-.editorInner :global(.drag-handle:hover) {
+:global(.drag-handle:hover) {
   background: #e5e7eb;
   opacity: 1;
 }
 
-.editorInner :global(.drag-handle::after) {
+:global(.drag-handle::after) {
   content: "⋮⋮";
   display: block;
   font-size: 12px;
