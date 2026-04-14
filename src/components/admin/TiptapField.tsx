@@ -152,6 +152,7 @@ export function TiptapField({ label, value, onChange, placeholder }: Props) {
             Картинка
           </button>
         </div>
+        <p className={styles.dragHint}>Перетаскивай блоки за маркер ⋮⋮ слева от строки.</p>
         <EditorContent editor={editor} className={styles.editorInner} />
       </div>
     </div>

@@ -2,6 +2,7 @@ import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
 import Placeholder from "@tiptap/extension-placeholder";
 import { StarterKit } from "@tiptap/starter-kit";
+import GlobalDragHandle from "tiptap-extension-global-drag-handle";
 
 const baseExtensions = () => [
   StarterKit.configure({
@@ -33,5 +34,8 @@ export function getEditorExtensions(placeholder?: string) {
         placeholder,
       })
     : null;
-  return ph ? [...baseExtensions(), ph] : baseExtensions();
+  const dragHandle = GlobalDragHandle.configure({
+    dragHandleWidth: 20,
+  });
+  return ph ? [...baseExtensions(), ph, dragHandle] : [...baseExtensions(), dragHandle];
 }

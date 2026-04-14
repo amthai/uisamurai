@@ -46,6 +46,7 @@
 .editorInner :global(.ProseMirror) {
   outline: none;
   min-height: 180px;
+  padding-left: 0.5rem;
 }
 
 .editorInner :global(.ProseMirror p.is-editor-empty:first-child::before) {
@@ -56,9 +57,43 @@
   pointer-events: none;
 }
 
+.editorInner :global(.ProseMirror img) {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.editorInner :global(.drag-handle) {
+  width: 16px;
+  border-radius: 4px;
+  opacity: 0.5;
+  cursor: grab;
+}
+
+.editorInner :global(.drag-handle:hover) {
+  background: #e5e7eb;
+  opacity: 1;
+}
+
+.editorInner :global(.drag-handle::after) {
+  content: "⋮⋮";
+  display: block;
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+  color: #6b7280;
+}
+
 .label {
   display: block;
   font-size: 0.85rem;
   font-weight: 600;
   margin-bottom: 0.35rem;
+}
+
+.dragHint {
+  margin: 0;
+  padding: 0.35rem 0.75rem 0;
+  font-size: 0.75rem;
+  color: #6b7280;
 }
