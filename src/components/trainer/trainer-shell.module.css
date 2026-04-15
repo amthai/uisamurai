@@ -101,7 +101,10 @@
 }
 
 .userName {
+  font-family: var(--font-roboto-condensed), "Arial Narrow", Arial, sans-serif;
+  font-weight: 500;
   font-size: 20px;
+  text-transform: uppercase;
   cursor: default;
 }
 
@@ -109,12 +112,11 @@
   position: relative;
   display: inline-flex;
   align-items: center;
-  padding-bottom: 6px;
 }
 
 .userDropdown {
   position: absolute;
-  top: calc(100% + 6px);
+  top: 100%;
   right: 0;
   min-width: 140px;
   padding: 0.35rem;
