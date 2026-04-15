@@ -307,6 +307,10 @@
   margin-bottom: 1.5rem;
 }
 
+.hero .h1 {
+  text-transform: uppercase;
+}
+
 .heroLabel {
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -397,6 +401,7 @@
 
 .assignment > .h2 {
   margin-top: 0;
+  text-transform: uppercase;
 }
 
 .comments {
@@ -406,6 +411,12 @@
 
 .comments .h2 {
   margin-top: 0;
+  text-transform: uppercase;
+}
+
+.comments .buttonPrimary,
+.comments .linkBtn {
+  text-transform: uppercase;
 }
 
 .commentForm {
