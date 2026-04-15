@@ -111,7 +111,7 @@ export default async function TrainerSectionPage(props: Props) {
         <RichHtml html={theoryHtml} />
       </section>
 
-      <section className={styles.block} aria-label="Задание">
+      <section className={styles.assignment} aria-label="Задание">
         <h2 className={styles.h2}>Задание</h2>
         {user && assignmentHtml ? (
           <RichHtml html={assignmentHtml} />

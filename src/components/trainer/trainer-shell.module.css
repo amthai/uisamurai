@@ -336,15 +336,12 @@
   text-decoration: underline;
 }
 
-.block {
+.assignment {
   margin-top: 60px;
-  padding: 20px;
-  background: #fff;
-  border: none;
-  border-radius: 20px;
+  padding: 0;
 }
 
-.block > .h2 {
+.assignment > .h2 {
   margin-top: 0;
 }
 
