@@ -372,7 +372,7 @@
   border: 1px solid #e6e6e6;
   border-radius: 9999px;
   background: #fff;
-  padding: 0.3rem 0.6rem;
+  padding: 0.3rem 0.35rem 0.3rem 0.6rem;
   z-index: 2;
 }
 
