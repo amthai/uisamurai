@@ -129,7 +129,7 @@
   border: none;
   background: transparent;
   padding: 0.35rem 0;
-  font-family: "Roboto Condensed", sans-serif;
+  font-family: var(--font-roboto-condensed), "Arial Narrow", Arial, sans-serif;
   font-weight: 500;
   font-size: 20px;
   text-transform: uppercase;
@@ -142,7 +142,7 @@
   color: #fff;
   border-radius: 8px;
   padding: 0.45rem 1rem;
-  font-family: "Roboto Condensed", sans-serif;
+  font-family: var(--font-roboto-condensed), "Arial Narrow", Arial, sans-serif;
   font-weight: 500;
   font-size: 20px;
   cursor: pointer;
