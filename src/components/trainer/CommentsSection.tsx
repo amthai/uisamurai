@@ -201,6 +201,7 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
 
   const roots = comments.filter((c) => !c.parent_id);
   const replies = comments.filter((c) => c.parent_id);
+  const replyTarget = replyTo ? comments.find((comment) => comment.id === replyTo) ?? null : null;
 
   if (!isLoggedIn) {
     return (
@@ -217,11 +218,24 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
       {error && <p className={styles.authError}>{error}</p>}
       <div className={styles.commentForm}>
         <div className={styles.textareaWrap}>
+          {replyTarget && (
+            <div className={styles.replyBadge}>
+              <span className={styles.replyBadgeText}>Ответ {replyTarget.user.first_name}</span>
+              <button
+                type="button"
+                className={styles.replyBadgeClose}
+                aria-label="Отменить ответ"
+                onClick={() => setReplyTo(null)}
+              >
+                ×
+              </button>
+            </div>
+          )}
           <textarea
             ref={textareaRef}
-            className={styles.textarea}
+            className={`${styles.textarea} ${replyTarget ? styles.textareaWithReply : ""}`}
             rows={3}
-            placeholder={replyTo ? "Ответ…" : "Напишите коммент..."}
+            placeholder="Напишите коммент..."
             value={text}
             onChange={(e) => {
               setText(e.target.value);
@@ -237,13 +251,6 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
             {submitting ? "Отправка…" : "Отправить"}
           </button>
         </div>
-        {replyTo && (
-          <div className={styles.formRow}>
-            <button type="button" className={styles.buttonGhost} onClick={() => setReplyTo(null)}>
-              Отменить ответ
-            </button>
-          </div>
-        )}
       </div>
       {loading ? (
         <div className={styles.commentSkeletonList} aria-busy="true" aria-label="Загрузка комментариев">
@@ -265,7 +272,14 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
               </div>
               <p className={styles.commentBody}>{c.body}</p>
               <div className={styles.commentActions}>
-                <button type="button" className={styles.linkBtn} onClick={() => setReplyTo(c.id)}>
+                <button
+                  type="button"
+                  className={styles.linkBtn}
+                  onClick={() => {
+                    setReplyTo(c.id);
+                    textareaRef.current?.focus();
+                  }}
+                >
                   Ответить
                 </button>
                 {currentUserId === c.user.id && (
