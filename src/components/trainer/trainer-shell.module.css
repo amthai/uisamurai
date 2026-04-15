@@ -370,7 +370,7 @@
   border: none;
   border-radius: 20px;
   padding: 20px;
-  font-size: 0.95rem;
+  font-size: 20px;
   font-family: inherit;
   resize: none;
   overflow: hidden;
@@ -434,13 +434,17 @@
 }
 
 .commentHead {
-  font-size: 0.85rem;
+  font-size: 20px;
   margin-bottom: 0.35rem;
+}
+
+.commentHead .muted {
+  font-size: 20px;
 }
 
 .commentBody {
   white-space: pre-wrap;
-  font-size: 0.95rem;
+  font-size: 20px;
   line-height: 1.5;
 }
 
