@@ -102,12 +102,61 @@
 
 .userName {
   font-size: 20px;
+  cursor: default;
 }
 
-.adminLink {
-  font-size: 20px;
-  opacity: 0.85;
-  text-decoration: underline;
+.userMenu {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  padding-bottom: 6px;
+}
+
+.userDropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 140px;
+  padding: 0.35rem;
+  border: none;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 10px 26px rgb(0 0 0 / 12%);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition:
+    opacity 0.14s ease,
+    transform 0.14s ease,
+    visibility 0.14s ease;
+  pointer-events: none;
+  z-index: 30;
+}
+
+.userMenu:hover .userDropdown,
+.userMenu:focus-within .userDropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.dropdownItem {
+  width: 100%;
+  border: none;
+  background: transparent;
+  border-radius: 14px;
+  padding: 0.55rem 0.75rem;
+  font-family: var(--font-roboto-condensed), "Arial Narrow", Arial, sans-serif;
+  font-weight: 500;
+  font-size: 18px;
+  text-transform: uppercase;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dropdownItem:hover {
+  background: #f5f5f5;
 }
 
 .widget {
@@ -122,17 +171,6 @@
   border-radius: 8px;
   padding: 0.35rem 0.75rem;
   font-size: 0.875rem;
-  cursor: pointer;
-}
-
-.logoutButton {
-  border: none;
-  background: transparent;
-  padding: 0.35rem 0;
-  font-family: var(--font-roboto-condensed), "Arial Narrow", Arial, sans-serif;
-  font-weight: 500;
-  font-size: 20px;
-  text-transform: uppercase;
   cursor: pointer;
 }
 

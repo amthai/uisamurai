@@ -121,20 +121,14 @@ export function TrainerHeader({ initialUser = null }: Props) {
           {error && <span className={styles.authError}>{error}</span>}
           {!botUsername && <span className={styles.authWarn}>Нет NEXT_PUBLIC_TELEGRAM_BOT_USERNAME</span>}
           {currentUser ? (
-            <>
-              <span className={styles.userName}>
-                {currentUser.first_name}
-                {currentUser.is_admin ? (
-                  <Link href="/admin" className={styles.adminLink}>
-                    {" "}
-                    · админ
-                  </Link>
-                ) : null}
-              </span>
-              <button type="button" className={styles.logoutButton} onClick={() => void logout()}>
-                Выйти
-              </button>
-            </>
+            <div className={styles.userMenu}>
+              <span className={styles.userName}>{currentUser.first_name}</span>
+              <div className={styles.userDropdown}>
+                <button type="button" className={styles.dropdownItem} onClick={() => void logout()}>
+                  Выйти
+                </button>
+              </div>
+            </div>
           ) : (
             <div id="telegram-login-widget" className={styles.widget} />
           )}
