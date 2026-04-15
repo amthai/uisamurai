@@ -369,7 +369,7 @@
   width: 100%;
   border: none;
   border-radius: 20px;
-  padding: 0.75rem 8.5rem 0.75rem 0.9rem;
+  padding: 20px;
   font-size: 0.95rem;
   font-family: inherit;
   resize: none;
@@ -378,8 +378,8 @@
 
 .textareaSendBtn {
   position: absolute;
-  right: 0.6rem;
-  bottom: 0.6rem;
+  right: 20px;
+  bottom: 20px;
 }
 
 .formRow {
