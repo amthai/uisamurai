@@ -32,6 +32,10 @@ function resolveSeoTitle(input: { title: string; seo_title?: string | null }): s
   return (input.seo_title ?? "").trim() || input.title;
 }
 
+function demoteH1ToH2(html: string): string {
+  return html.replace(/<h1(\s|>)/g, "<h2$1").replace(/<\/h1>/g, "</h2>");
+}
+
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const { slug } = await props.params;
   const preferred = await supabaseServer
@@ -94,7 +98,7 @@ export default async function TrainerSectionPage(props: Props) {
 
   const user = await getSessionUser();
   const theoryHtml = tiptapJsonToHtml(section.body);
-  const assignmentHtml = user ? tiptapJsonToHtml(section.assignment) : null;
+  const assignmentHtml = user ? demoteH1ToH2(tiptapJsonToHtml(section.assignment)) : null;
   const h1Title = resolveSeoTitle(section);
 
   return (

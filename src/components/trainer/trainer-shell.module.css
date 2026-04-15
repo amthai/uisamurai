@@ -7,7 +7,6 @@
 }
 
 .header {
-  border-bottom: 1px solid #e5e5e5;
   background: #f0f0f0;
 }
 
@@ -29,7 +28,7 @@
 .coverInner {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 8rem 1.25rem 4rem;
+  padding: 250px 1.25rem;
   text-align: center;
 }
 
@@ -43,11 +42,18 @@
   text-transform: uppercase;
 }
 
+.coverTitleLogo {
+  width: min(676px, 100%);
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
 .coverSubtitle {
-  max-width: 920px;
-  margin: 1.25rem auto 0;
+  max-width: 700px;
+  margin: 3rem auto 0;
   font-size: 40px;
-  line-height: 1.1;
+  line-height: 1.05;
   text-transform: uppercase;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -59,7 +65,7 @@
 }
 
 .brandLogo {
-  width: min(280px, 56vw);
+  width: min(240px, 56vw);
   height: auto;
   display: block;
 }
@@ -141,7 +147,7 @@
   max-width: 1200px;
   margin: 0 auto;
   width: 100%;
-  gap: 1.25rem;
+  gap: 60px;
   padding: 1.5rem 1.25rem 0;
 }
 
@@ -154,6 +160,10 @@
   .coverInner {
     padding: 4rem 1.25rem 2rem;
     text-align: left;
+  }
+
+  .coverTitleLogo {
+    margin: 0;
   }
 
   .coverSubtitle {
@@ -252,14 +262,15 @@
 }
 
 .h1 {
-  font-size: 1.75rem;
-  font-weight: 700;
+  font-size: 40px;
+  font-weight: 600;
   line-height: 1.2;
+  letter-spacing: -0.02em;
   margin-bottom: 0.5rem;
 }
 
 .h2 {
-  font-size: 40px;
+  font-size: 32px;
   font-weight: 600;
   letter-spacing: -0.02em;
   margin: 60px 0 12px;
@@ -277,20 +288,20 @@
 }
 
 .tiptapHtml :global(h1) {
-  font-size: 1.5rem;
+  font-size: 48px;
   margin: 1.25rem 0 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .tiptapHtml :global(h2) {
-  font-size: 40px;
+  font-size: 32px;
   margin: 60px 0 12px;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
 
 .tiptapHtml :global(h3) {
-  font-size: 28px;
+  font-size: 24px;
   margin: 30px 0 12px;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -326,7 +337,7 @@
 }
 
 .block {
-  margin-top: 2rem;
+  margin-top: 60px;
   padding: 1.25rem;
   background: #fff;
   border: 1px solid #e5e5e5;
@@ -334,9 +345,12 @@
 }
 
 .comments {
-  margin-top: 2.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #e5e5e5;
+  margin-top: 60px;
+  padding-top: 0;
+}
+
+.comments .h2 {
+  margin-top: 0;
 }
 
 .commentForm {
