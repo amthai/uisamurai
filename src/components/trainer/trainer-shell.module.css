@@ -624,6 +624,10 @@
   flex-shrink: 0;
 }
 
+.reactionBtn + .replyActionBtn {
+  margin-left: 12px;
+}
+
 .replyList {
   list-style: none;
   margin: 0.75rem 0 0 1rem;

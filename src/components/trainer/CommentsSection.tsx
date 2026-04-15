@@ -274,7 +274,7 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
               <div className={styles.commentActions}>
                 <button
                   type="button"
-                  className={c.my_reaction === "like" ? styles.reactionOn : styles.linkBtn}
+                  className={`${c.my_reaction === "like" ? styles.reactionOn : styles.linkBtn} ${styles.reactionBtn}`}
                   onClick={() => void react(c.id, "like")}
                   aria-label={c.my_reaction === "like" ? "Убрать лайк" : "Поставить лайк"}
                 >
@@ -299,7 +299,7 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
                   Ответить
                 </button>
                 {currentUserId === c.user.id && (
-                  <button type="button" className={styles.linkBtn} onClick={() => void remove(c.id)}>
+                  <button type="button" className={styles.replyActionBtn} onClick={() => void remove(c.id)}>
                     Удалить
                   </button>
                 )}
@@ -318,7 +318,7 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
                       <div className={styles.commentActions}>
                         <button
                           type="button"
-                          className={r.my_reaction === "like" ? styles.reactionOn : styles.linkBtn}
+                          className={`${r.my_reaction === "like" ? styles.reactionOn : styles.linkBtn} ${styles.reactionBtn}`}
                           onClick={() => void react(r.id, "like")}
                           aria-label={r.my_reaction === "like" ? "Убрать лайк" : "Поставить лайк"}
                         >
@@ -333,7 +333,7 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
                           </span>
                         </button>
                         {currentUserId === r.user.id && (
-                          <button type="button" className={styles.linkBtn} onClick={() => void remove(r.id)}>
+                          <button type="button" className={styles.replyActionBtn} onClick={() => void remove(r.id)}>
                             Удалить
                           </button>
                         )}
