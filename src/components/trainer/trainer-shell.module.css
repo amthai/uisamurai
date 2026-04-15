@@ -338,10 +338,14 @@
 
 .block {
   margin-top: 60px;
-  padding: 1.25rem;
+  padding: 20px;
   background: #fff;
-  border: 1px solid #e5e5e5;
-  border-radius: 12px;
+  border: none;
+  border-radius: 20px;
+}
+
+.block > .h2 {
+  margin-top: 0;
 }
 
 .comments {
