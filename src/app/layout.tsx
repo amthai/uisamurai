@@ -5,6 +5,7 @@ import "./globals.css";
 const robotoCondensed = localFont({
   src: [
     { path: "./fonts/RobotoCondensed-Regular.woff", weight: "400", style: "normal" },
+    { path: "./fonts/RobotoCondensed-Medium.ttf", weight: "500", style: "normal" },
     { path: "./fonts/RobotoCondensed-SemiBold.woff", weight: "600", style: "normal" },
   ],
   variable: "--font-roboto-condensed",
