@@ -131,7 +131,7 @@ export function TrainerHeader({ initialUser = null }: Props) {
                   </Link>
                 ) : null}
               </span>
-              <button type="button" className={styles.buttonGhost} onClick={() => void logout()}>
+              <button type="button" className={styles.logoutButton} onClick={() => void logout()}>
                 Выйти
               </button>
             </>
