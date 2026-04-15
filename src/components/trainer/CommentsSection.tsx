@@ -177,7 +177,7 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
   if (!isLoggedIn) {
     return (
       <section className={styles.comments}>
-        <h2 className={styles.h2}>Комментарии</h2>
+        <h2 className={styles.h2}>Комменты</h2>
         <p className={styles.muted}>Войди через Telegram, чтобы обсуждать материал.</p>
       </section>
     );
@@ -185,31 +185,33 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
 
   return (
     <section className={styles.comments}>
-      <h2 className={styles.h2}>Комментарии</h2>
+      <h2 className={styles.h2}>Комменты</h2>
       {error && <p className={styles.authError}>{error}</p>}
       <div className={styles.commentForm}>
-        <textarea
-          className={styles.textarea}
-          rows={3}
-          placeholder={replyTo ? "Ответ…" : "Комментарий…"}
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-        />
-        <div className={styles.formRow}>
-          {replyTo && (
-            <button type="button" className={styles.buttonGhost} onClick={() => setReplyTo(null)}>
-              Отменить ответ
-            </button>
-          )}
+        <div className={styles.textareaWrap}>
+          <textarea
+            className={styles.textarea}
+            rows={3}
+            placeholder={replyTo ? "Ответ…" : "Напишите коммент..."}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
           <button
             type="button"
-            className={styles.buttonPrimary}
+            className={`${styles.buttonPrimary} ${styles.textareaSendBtn}`}
             disabled={submitting || !text.trim()}
             onClick={() => void submit()}
           >
             {submitting ? "Отправка…" : "Отправить"}
           </button>
         </div>
+        {replyTo && (
+          <div className={styles.formRow}>
+            <button type="button" className={styles.buttonGhost} onClick={() => setReplyTo(null)}>
+              Отменить ответ
+            </button>
+          </div>
+        )}
       </div>
       {loading ? (
         <div className={styles.commentSkeletonList} aria-busy="true" aria-label="Загрузка комментариев">
