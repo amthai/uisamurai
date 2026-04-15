@@ -80,6 +80,13 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const reactionPending = useRef(new Set<string>());
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const autoResizeTextarea = useCallback((node: HTMLTextAreaElement | null) => {
+    if (!node) return;
+    node.style.height = "auto";
+    node.style.height = `${node.scrollHeight}px`;
+  }, []);
 
   const load = useCallback(
     async (opts?: { silent?: boolean }) => {
@@ -107,6 +114,10 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
   useEffect(() => {
     void load();
   }, [load]);
+
+  useEffect(() => {
+    autoResizeTextarea(textareaRef.current);
+  }, [autoResizeTextarea, text]);
 
   const submit = async () => {
     const trimmed = text.trim();
@@ -190,11 +201,15 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
       <div className={styles.commentForm}>
         <div className={styles.textareaWrap}>
           <textarea
+            ref={textareaRef}
             className={styles.textarea}
             rows={3}
             placeholder={replyTo ? "Ответ…" : "Напишите коммент..."}
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => {
+              setText(e.target.value);
+              autoResizeTextarea(e.currentTarget);
+            }}
           />
           <button
             type="button"
