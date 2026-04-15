@@ -330,7 +330,9 @@
 .h2 {
   font-size: 32px;
   font-weight: 600;
+  line-height: 1.2;
   letter-spacing: -0.02em;
+  text-transform: uppercase;
   margin: 60px 0 12px;
 }
 
@@ -355,7 +357,9 @@
   font-size: 32px;
   margin: 60px 0 12px;
   font-weight: 600;
+  line-height: 1.2;
   letter-spacing: -0.02em;
+  text-transform: uppercase;
 }
 
 .tiptapHtml :global(h3) {
