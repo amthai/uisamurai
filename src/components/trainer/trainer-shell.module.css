@@ -457,24 +457,28 @@
 }
 
 .linkBtn {
-  border: none;
-  background: none;
-  padding: 0;
+  border: 1px solid #e9e9e9;
+  background: #fff;
+  padding: 0.28rem 0.72rem;
+  border-radius: 9999px;
   font-size: 0.85rem;
   cursor: pointer;
-  color: #2563eb;
-  text-decoration: underline;
+  color: #1c1c1c;
+  text-decoration: none;
+  line-height: 1;
 }
 
 .reactionOn {
-  border: none;
-  background: none;
-  padding: 0;
+  border: 1px solid #dcdcdc;
+  background: #fff;
+  padding: 0.28rem 0.72rem;
+  border-radius: 9999px;
   font-size: 0.85rem;
   cursor: pointer;
   font-weight: 600;
   color: #1c1c1c;
   text-decoration: none;
+  line-height: 1;
 }
 
 .replyList {
