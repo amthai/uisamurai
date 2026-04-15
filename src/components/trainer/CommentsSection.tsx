@@ -274,7 +274,15 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
               <div className={styles.commentActions}>
                 <button
                   type="button"
-                  className={styles.linkBtn}
+                  className={c.my_reaction === "like" ? styles.reactionOn : styles.linkBtn}
+                  onClick={() => void react(c.id, "like")}
+                  aria-label={c.my_reaction === "like" ? "Убрать лайк" : "Поставить лайк"}
+                >
+                  ❤ {c.likes}
+                </button>
+                <button
+                  type="button"
+                  className={styles.replyActionBtn}
                   onClick={() => {
                     setReplyTo(c.id);
                     textareaRef.current?.focus();
@@ -287,20 +295,6 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
                     Удалить
                   </button>
                 )}
-                <button
-                  type="button"
-                  className={c.my_reaction === "like" ? styles.reactionOn : styles.linkBtn}
-                  onClick={() => void react(c.id, "like")}
-                >
-                  👍 {c.likes}
-                </button>
-                <button
-                  type="button"
-                  className={c.my_reaction === "dislike" ? styles.reactionOn : styles.linkBtn}
-                  onClick={() => void react(c.id, "dislike")}
-                >
-                  👎 {c.dislikes}
-                </button>
               </div>
               <ul className={styles.replyList}>
                 {replies
@@ -314,25 +308,19 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
                       </div>
                       <p className={styles.commentBody}>{r.body}</p>
                       <div className={styles.commentActions}>
+                        <button
+                          type="button"
+                          className={r.my_reaction === "like" ? styles.reactionOn : styles.linkBtn}
+                          onClick={() => void react(r.id, "like")}
+                          aria-label={r.my_reaction === "like" ? "Убрать лайк" : "Поставить лайк"}
+                        >
+                          ❤ {r.likes}
+                        </button>
                         {currentUserId === r.user.id && (
                           <button type="button" className={styles.linkBtn} onClick={() => void remove(r.id)}>
                             Удалить
                           </button>
                         )}
-                        <button
-                          type="button"
-                          className={r.my_reaction === "like" ? styles.reactionOn : styles.linkBtn}
-                          onClick={() => void react(r.id, "like")}
-                        >
-                          👍 {r.likes}
-                        </button>
-                        <button
-                          type="button"
-                          className={r.my_reaction === "dislike" ? styles.reactionOn : styles.linkBtn}
-                          onClick={() => void react(r.id, "dislike")}
-                        >
-                          👎 {r.dislikes}
-                        </button>
                       </div>
                     </li>
                   ))}
