@@ -377,6 +377,7 @@
   position: absolute;
   right: 20px;
   bottom: 20px;
+  border-radius: 9999px;
 }
 
 .formRow {
@@ -437,6 +438,8 @@
 
 .commentHead .muted {
   font-size: 20px;
+  color: #8c8c8c;
+  opacity: 1;
 }
 
 .commentBody {
