@@ -27,6 +27,23 @@ type Props = {
   currentUserId: string | null;
 };
 
+const commentDateFormatter = new Intl.DateTimeFormat("ru-RU", {
+  day: "numeric",
+  month: "short",
+  hour: "2-digit",
+  minute: "2-digit",
+});
+
+function formatCommentDate(dateIso: string): string {
+  const date = new Date(dateIso);
+  const parts = commentDateFormatter.formatToParts(date);
+  const day = parts.find((part) => part.type === "day")?.value ?? "";
+  const month = (parts.find((part) => part.type === "month")?.value ?? "").replace(".", "");
+  const hour = parts.find((part) => part.type === "hour")?.value ?? "";
+  const minute = parts.find((part) => part.type === "minute")?.value ?? "";
+  return `${day} ${month} ${hour}:${minute}`.trim();
+}
+
 function patchCommentReactions(
   list: CommentItem[],
   commentId: string,
@@ -244,7 +261,7 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
               <div className={styles.commentHead}>
                 <strong>{c.user.first_name}</strong>
                 {c.user.username ? <span className={styles.muted}> @{c.user.username}</span> : null}
-                <span className={styles.muted}> · {new Date(c.created_at).toLocaleString()}</span>
+                <span className={styles.muted}> · {formatCommentDate(c.created_at)}</span>
               </div>
               <p className={styles.commentBody}>{c.body}</p>
               <div className={styles.commentActions}>
@@ -279,7 +296,7 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
                       <div className={styles.commentHead}>
                         <strong>{r.user.first_name}</strong>
                         {r.user.username ? <span className={styles.muted}> @{r.user.username}</span> : null}
-                        <span className={styles.muted}> · {new Date(r.created_at).toLocaleString()}</span>
+                        <span className={styles.muted}> · {formatCommentDate(r.created_at)}</span>
                       </div>
                       <p className={styles.commentBody}>{r.body}</p>
                       <div className={styles.commentActions}>
