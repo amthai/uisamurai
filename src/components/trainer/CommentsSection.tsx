@@ -278,7 +278,15 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
                   onClick={() => void react(c.id, "like")}
                   aria-label={c.my_reaction === "like" ? "Убрать лайк" : "Поставить лайк"}
                 >
-                  ❤ {c.likes}
+                  <span className={styles.reactionContent}>
+                    <img
+                      src={c.my_reaction === "like" ? "/heart-fill.svg" : "/heart-line.svg"}
+                      alt=""
+                      aria-hidden="true"
+                      className={styles.reactionIcon}
+                    />
+                    {c.likes}
+                  </span>
                 </button>
                 <button
                   type="button"
@@ -314,7 +322,15 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
                           onClick={() => void react(r.id, "like")}
                           aria-label={r.my_reaction === "like" ? "Убрать лайк" : "Поставить лайк"}
                         >
-                          ❤ {r.likes}
+                          <span className={styles.reactionContent}>
+                            <img
+                              src={r.my_reaction === "like" ? "/heart-fill.svg" : "/heart-line.svg"}
+                              alt=""
+                              aria-hidden="true"
+                              className={styles.reactionIcon}
+                            />
+                            {r.likes}
+                          </span>
                         </button>
                         {currentUserId === r.user.id && (
                           <button type="button" className={styles.linkBtn} onClick={() => void remove(r.id)}>

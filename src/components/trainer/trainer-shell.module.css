@@ -612,6 +612,18 @@
   line-height: 1;
 }
 
+.reactionContent {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.reactionIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
 .replyList {
   list-style: none;
   margin: 0.75rem 0 0 1rem;
