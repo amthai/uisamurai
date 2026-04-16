@@ -3,6 +3,7 @@ import { getSessionUser } from "@/lib/auth/get-session-user";
 import { supabaseServer } from "@/lib/supabase/server";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const ATTACHMENTS_BUCKET = "content-images";
 
 export async function DELETE(
   _request: Request,
@@ -33,6 +34,13 @@ export async function DELETE(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const { data: attachments } = await supabaseServer
+    .from("comment_attachments")
+    .select("storage_path")
+    .eq("comment_id", commentId);
+
+  const storagePaths = (attachments ?? []).map((attachment) => attachment.storage_path as string);
+
   const { error: delErr } = await supabaseServer
     .from("comments")
     .update({ deleted_at: new Date().toISOString() })
@@ -40,6 +48,11 @@ export async function DELETE(
 
   if (delErr) {
     return NextResponse.json({ error: "Failed to delete" }, { status: 500 });
+  }
+
+  if (storagePaths.length > 0) {
+    await supabaseServer.storage.from(ATTACHMENTS_BUCKET).remove(storagePaths);
+    await supabaseServer.from("comment_attachments").delete().eq("comment_id", commentId);
   }
 
   return NextResponse.json({ ok: true });

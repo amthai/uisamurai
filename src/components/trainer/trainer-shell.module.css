@@ -495,11 +495,82 @@
   padding-top: 56px;
 }
 
+.textareaWithTools {
+  padding-bottom: 68px;
+}
+
+.attachInput {
+  display: none;
+}
+
+.attachBtn {
+  position: absolute;
+  left: 20px;
+  bottom: 20px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 9999px;
+  background: #fff;
+  color: #1c1c1c;
+  display: inline-grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.attachBtn:hover {
+  background: #f3f3f3;
+}
+
+.attachBtn:focus-visible {
+  outline: 2px solid #d8d8d8;
+  outline-offset: 2px;
+}
+
 .textareaSendBtn {
   position: absolute;
   right: 20px;
   bottom: 20px;
   border-radius: 9999px;
+}
+
+.attachPreviewList {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.attachPreviewItem {
+  position: relative;
+  width: 70px;
+  height: 70px;
+}
+
+.attachPreviewImg {
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  object-fit: cover;
+  display: block;
+}
+
+.attachPreviewRemove {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 9999px;
+  background: #1c1c1c;
+  color: #fff;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-grid;
+  place-items: center;
 }
 
 .commentSkeletonList {
@@ -560,6 +631,33 @@
   white-space: pre-wrap;
   font-size: 20px;
   line-height: 1.5;
+}
+
+.commentAttachmentOne {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  margin-top: 0.55rem;
+}
+
+.commentAttachmentImg {
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  object-fit: cover;
+  display: block;
+}
+
+.commentAttachmentCounter {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  border-radius: 9999px;
+  background: rgb(0 0 0 / 70%);
+  color: #fff;
+  font-size: 0.72rem;
+  padding: 0.2rem 0.4rem;
+  line-height: 1;
 }
 
 .commentActions {

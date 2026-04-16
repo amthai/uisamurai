@@ -3,10 +3,18 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./trainer-shell.module.css";
 
+const MAX_ATTACHMENTS = 10;
+const MAX_ATTACHMENT_BYTES = 3 * 1024 * 1024;
+const ALLOWED_ATTACHMENT_TYPES = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"]);
+
 type CommentUser = {
   id: string;
   first_name: string;
   username: string | null;
+};
+
+type CommentAttachment = {
+  url: string;
 };
 
 export type CommentItem = {
@@ -15,10 +23,17 @@ export type CommentItem = {
   parent_id: string | null;
   body: string;
   created_at: string;
+  attachments: CommentAttachment[];
   user: CommentUser;
   likes: number;
   dislikes: number;
   my_reaction: "like" | "dislike" | null;
+};
+
+type DraftAttachment = {
+  id: string;
+  file: File;
+  previewUrl: string;
 };
 
 type Props = {
@@ -94,10 +109,13 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
   const [loading, setLoading] = useState(isLoggedIn);
   const [submitting, setSubmitting] = useState(false);
   const [text, setText] = useState("");
+  const [attachments, setAttachments] = useState<DraftAttachment[]>([]);
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const reactionPending = useRef(new Set<string>());
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const attachmentsRef = useRef<DraftAttachment[]>([]);
 
   const autoResizeTextarea = useCallback((node: HTMLTextAreaElement | null) => {
     if (!node) return;
@@ -136,17 +154,93 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
     autoResizeTextarea(textareaRef.current);
   }, [autoResizeTextarea, text]);
 
+  useEffect(() => {
+    attachmentsRef.current = attachments;
+  }, [attachments]);
+
+  useEffect(
+    () => () => {
+      for (const attachment of attachmentsRef.current) {
+        URL.revokeObjectURL(attachment.previewUrl);
+      }
+    },
+    [],
+  );
+
+  const removeAttachment = (id: string) => {
+    setAttachments((prev) => {
+      const target = prev.find((attachment) => attachment.id === id);
+      if (target) {
+        URL.revokeObjectURL(target.previewUrl);
+      }
+      return prev.filter((attachment) => attachment.id !== id);
+    });
+  };
+
+  const onPickAttachments = (files: FileList | null) => {
+    if (!files) return;
+    const selected = Array.from(files);
+    if (selected.length === 0) return;
+
+    const currentCount = attachmentsRef.current.length;
+    const freeSlots = Math.max(0, MAX_ATTACHMENTS - currentCount);
+    if (freeSlots === 0) {
+      setError(`Можно прикрепить максимум ${MAX_ATTACHMENTS} картинок.`);
+      return;
+    }
+
+    const accepted = selected.slice(0, freeSlots);
+    const next: DraftAttachment[] = [];
+    let nextError: string | null = null;
+
+    for (const file of accepted) {
+      if (!ALLOWED_ATTACHMENT_TYPES.has(file.type)) {
+        nextError = "Можно прикреплять только PNG, JPG, GIF или WEBP.";
+        continue;
+      }
+      if (file.size > MAX_ATTACHMENT_BYTES) {
+        nextError = "Каждая картинка должна быть не больше 3 МБ.";
+        continue;
+      }
+      next.push({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        file,
+        previewUrl: URL.createObjectURL(file),
+      });
+    }
+
+    if (next.length > 0) {
+      setAttachments((prev) => [...prev, ...next]);
+    }
+
+    if (selected.length > freeSlots) {
+      setError(`Можно прикрепить максимум ${MAX_ATTACHMENTS} картинок.`);
+    } else if (nextError) {
+      setError(nextError);
+    } else {
+      setError(null);
+    }
+  };
+
   const submit = async () => {
     const trimmed = text.trim();
-    if (!trimmed || submitting) return;
+    if ((!trimmed && attachments.length === 0) || submitting) return;
     setError(null);
     setSubmitting(true);
     try {
+      const formData = new FormData();
+      formData.set("body", trimmed);
+      if (replyTo) {
+        formData.set("parent_id", replyTo);
+      }
+      for (const attachment of attachments) {
+        formData.append("attachments", attachment.file, attachment.file.name);
+      }
+
       const res = await fetch(`/api/sections/${sectionId}/comments`, {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ body: trimmed, parent_id: replyTo }),
+        body: formData,
       });
       if (res.status === 429) {
         const data = (await res.json()) as { retryAfterSec?: number };
@@ -160,6 +254,10 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
       }
       const created = (await res.json()) as { id?: string };
       setText("");
+      for (const attachment of attachmentsRef.current) {
+        URL.revokeObjectURL(attachment.previewUrl);
+      }
+      setAttachments([]);
       setReplyTo(null);
       await load({ silent: true });
       if (created.id) scrollToCommentNode(created.id);
@@ -233,7 +331,7 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
           )}
           <textarea
             ref={textareaRef}
-            className={`${styles.textarea} ${replyTarget ? styles.textareaWithReply : ""}`}
+            className={`${styles.textarea} ${replyTarget ? styles.textareaWithReply : ""} ${styles.textareaWithTools}`}
             rows={3}
             placeholder="Напишите коммент..."
             value={text}
@@ -242,15 +340,65 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
               autoResizeTextarea(e.currentTarget);
             }}
           />
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/gif,image/webp"
+            multiple
+            className={styles.attachInput}
+            onChange={(e) => {
+              onPickAttachments(e.currentTarget.files);
+              e.currentTarget.value = "";
+            }}
+          />
+          <button
+            type="button"
+            className={styles.attachBtn}
+            aria-label="Прикрепить изображение"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path
+                d="M16.5 6.5L8.9 14.1C7.73 15.28 7.73 17.18 8.9 18.35C10.08 19.53 11.98 19.53 13.15 18.35L20.05 11.45C22.01 9.49 22.01 6.31 20.05 4.35C18.09 2.38 14.91 2.38 12.95 4.35L5.35 11.95C2.61 14.68 2.61 19.12 5.35 21.85C8.08 24.58 12.52 24.58 15.25 21.85L21.44 15.66"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
           <button
             type="button"
             className={`${styles.buttonPrimary} ${styles.textareaSendBtn}`}
-            disabled={submitting || !text.trim()}
+            disabled={submitting || (!text.trim() && attachments.length === 0)}
             onClick={() => void submit()}
           >
             {submitting ? "Отправка…" : "Отправить"}
           </button>
         </div>
+        {attachments.length > 0 && (
+          <ul className={styles.attachPreviewList}>
+            {attachments.map((attachment) => (
+              <li key={attachment.id} className={styles.attachPreviewItem}>
+                <img
+                  src={attachment.previewUrl}
+                  alt="Предпросмотр вложения"
+                  className={styles.attachPreviewImg}
+                  loading="lazy"
+                />
+                <button
+                  type="button"
+                  className={styles.attachPreviewRemove}
+                  aria-label="Убрать картинку"
+                  onClick={() => removeAttachment(attachment.id)}
+                >
+                  ×
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
       {loading ? (
         <div className={styles.commentSkeletonList} aria-busy="true" aria-label="Загрузка комментариев">
@@ -270,7 +418,20 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
                 {c.user.username ? <span className={styles.muted}> @{c.user.username}</span> : null}
                 <span className={styles.muted}> · {formatCommentDate(c.created_at)}</span>
               </div>
-              <p className={styles.commentBody}>{c.body}</p>
+              {c.body ? <p className={styles.commentBody}>{c.body}</p> : null}
+              {c.attachments.length > 0 && (
+                <div className={styles.commentAttachmentOne}>
+                  <img
+                    src={c.attachments[0]!.url}
+                    alt="Вложение комментария"
+                    className={styles.commentAttachmentImg}
+                    loading="lazy"
+                  />
+                  {c.attachments.length > 1 && (
+                    <span className={styles.commentAttachmentCounter}>+{c.attachments.length - 1}</span>
+                  )}
+                </div>
+              )}
               <div className={styles.commentActions}>
                 <button
                   type="button"
@@ -314,7 +475,20 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
                         {r.user.username ? <span className={styles.muted}> @{r.user.username}</span> : null}
                         <span className={styles.muted}> · {formatCommentDate(r.created_at)}</span>
                       </div>
-                      <p className={styles.commentBody}>{r.body}</p>
+                      {r.body ? <p className={styles.commentBody}>{r.body}</p> : null}
+                      {r.attachments.length > 0 && (
+                        <div className={styles.commentAttachmentOne}>
+                          <img
+                            src={r.attachments[0]!.url}
+                            alt="Вложение комментария"
+                            className={styles.commentAttachmentImg}
+                            loading="lazy"
+                          />
+                          {r.attachments.length > 1 && (
+                            <span className={styles.commentAttachmentCounter}>+{r.attachments.length - 1}</span>
+                          )}
+                        </div>
+                      )}
                       <div className={styles.commentActions}>
                         <button
                           type="button"
