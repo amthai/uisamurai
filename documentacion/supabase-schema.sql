@@ -5,14 +5,19 @@ create extension if not exists pgcrypto;
 
 create table if not exists public.users (
   id uuid primary key default gen_random_uuid(),
-  telegram_id bigint unique not null,
+  telegram_id bigint unique,
+  yandex_id text unique,
+  yandex_login text,
+  yandex_email text,
+  auth_provider text not null default 'telegram' check (auth_provider in ('telegram', 'yandex')),
   first_name text not null,
   last_name text,
   username text,
   photo_url text,
   is_admin boolean not null default false,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  constraint users_identity_present_check check (telegram_id is not null or yandex_id is not null)
 );
 
 create table if not exists public.sessions (

@@ -62,6 +62,17 @@ export function TrainerHeader({ initialUser = null }: Props) {
     void fetchCurrentUser();
   }, [initialUser]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("authError") === "yandex") {
+      setError("Не удалось войти через Яндекс");
+      params.delete("authError");
+      const nextQuery = params.toString();
+      const nextUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ""}`;
+      window.history.replaceState({}, "", nextUrl);
+    }
+  }, []);
+
   const completeTelegramAuth = useCallback(async (payload: TelegramAuthPayload) => {
     setError(null);
     setIsAuthorizing(true);
@@ -145,6 +156,11 @@ export function TrainerHeader({ initialUser = null }: Props) {
     setError(null);
   };
 
+  const startYandexAuth = () => {
+    const returnTo = `${window.location.pathname}${window.location.search}`;
+    window.location.href = `/api/auth/yandex/start?returnTo=${encodeURIComponent(returnTo)}`;
+  };
+
   return (
     <header className={styles.header}>
       <div className={styles.headerInner}>
@@ -212,8 +228,8 @@ export function TrainerHeader({ initialUser = null }: Props) {
               <div className={styles.authOption}>
                 <p className={styles.authOptionTitle}>Другие варианты</p>
                 <div className={styles.authOptionsList}>
-                  <button type="button" className={styles.buttonGhost} disabled>
-                    Email + код (скоро)
+                  <button type="button" className={styles.buttonGhost} onClick={startYandexAuth}>
+                    Яндекс ID
                   </button>
                   <button type="button" className={styles.buttonGhost} disabled>
                     Magic link (скоро)

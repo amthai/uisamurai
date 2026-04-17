@@ -25,6 +25,9 @@
 | `SUPABASE_SERVICE_ROLE_KEY` | Только для server-side; **не** префикс `NEXT_PUBLIC_` |
 | `TELEGRAM_BOT_TOKEN` | Секрет бота |
 | `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` | Username бота без `@` |
+| `YANDEX_CLIENT_ID` | OAuth Client ID Яндекс ID |
+| `YANDEX_CLIENT_SECRET` | OAuth Client Secret Яндекс ID |
+| `YANDEX_REDIRECT_URI` | Полный callback URL, например `https://<host>/api/auth/yandex/callback` |
 
 Опционально для Prisma/CLI-скриптов на CI, если появятся:
 
@@ -38,6 +41,11 @@
 
 - Домен в BotFather должен совпадать с хостом деплоя (например `xxx.vercel.app` или свой домен).
 - В BotFather у бота должен быть указан этот же хост в `Bot Settings / Domain` (без `https://`).
+
+## Яндекс ID на прод-домене
+
+- В кабинете Яндекс ID у OAuth-приложения должен быть добавлен callback URL из `YANDEX_REDIRECT_URI`.
+- Протокол, домен и путь callback должны совпадать 1-в-1, иначе `code` обмен не пройдет.
 
 ## База данных
 
