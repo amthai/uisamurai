@@ -18,7 +18,12 @@ type TelegramSendMessageResponse = {
   description?: string;
 };
 
-async function sendTelegramLoginConfirmation(botToken: string, telegramId: number): Promise<boolean> {
+type TelegramConfirmationResult = {
+  sent: boolean;
+  error?: string;
+};
+
+async function sendTelegramLoginConfirmation(botToken: string, telegramId: number): Promise<TelegramConfirmationResult> {
   try {
     const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
       method: "POST",
@@ -31,10 +36,17 @@ async function sendTelegramLoginConfirmation(botToken: string, telegramId: numbe
     });
 
     const data = (await response.json()) as TelegramSendMessageResponse;
-    return response.ok && data.ok;
+    if (!response.ok || !data.ok) {
+      return {
+        sent: false,
+        error: data.description ?? `Telegram API request failed with status ${response.status}`,
+      };
+    }
+
+    return { sent: true };
   } catch (error) {
     console.error("Failed to send Telegram login confirmation", error);
-    return false;
+    return { sent: false, error: "Network error while sending Telegram confirmation" };
   }
 }
 
@@ -108,7 +120,12 @@ export async function POST(request: Request) {
     expires: expiresAt,
   });
 
-  const telegramConfirmationSent = await sendTelegramLoginConfirmation(botToken, payload.id);
+  const telegramConfirmation = await sendTelegramLoginConfirmation(botToken, payload.id);
 
-  return NextResponse.json({ ok: true, user, telegramConfirmationSent });
+  return NextResponse.json({
+    ok: true,
+    user,
+    telegramConfirmationSent: telegramConfirmation.sent,
+    telegramConfirmationError: telegramConfirmation.error ?? null,
+  });
 }

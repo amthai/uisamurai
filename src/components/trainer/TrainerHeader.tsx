@@ -20,6 +20,7 @@ type TelegramAuthResponse = {
   error?: string;
   details?: string;
   telegramConfirmationSent?: boolean;
+  telegramConfirmationError?: string | null;
 };
 
 export type CurrentUser = {
@@ -78,7 +79,10 @@ export function TrainerHeader({ initialUser = null }: Props) {
       }
 
       if (data.telegramConfirmationSent === false) {
-        setError("Вход выполнен, но Telegram не принял сообщение подтверждения. Напиши /start боту и попробуй снова.");
+        const confirmationReason = data.telegramConfirmationError
+          ? `Причина: ${data.telegramConfirmationError}.`
+          : "Причина неизвестна.";
+        setError(`Вход выполнен, но Telegram не принял сообщение подтверждения. ${confirmationReason} Напиши /start боту и попробуй снова.`);
       }
 
       const meResponse = await fetch("/api/auth/me", { credentials: "include" });
@@ -92,7 +96,7 @@ export function TrainerHeader({ initialUser = null }: Props) {
     script.setAttribute("data-telegram-login", botUsername);
     script.setAttribute("data-size", "large");
     script.setAttribute("data-userpic", "false");
-    script.setAttribute("data-request-access", "write");
+    script.setAttribute("data-request-access", "read");
     script.setAttribute("data-onauth", "onTelegramAuth(user)");
 
     const container = document.getElementById("telegram-login-widget");
