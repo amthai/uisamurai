@@ -1,14 +1,23 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import styles from "./trainer-shell.module.css";
 
-type TelegramChallengeStartResponse = {
+type TelegramAuthPayload = {
+  id: number;
+  first_name: string;
+  last_name?: string;
+  username?: string;
+  photo_url?: string;
+  auth_date: number;
+  hash: string;
+};
+
+type TelegramAuthResponse = {
   ok?: boolean;
-  authUrl?: string;
-  expiresAt?: string;
+  user?: CurrentUser;
   error?: string;
   details?: string;
 };
@@ -25,19 +34,19 @@ type Props = {
   initialUser?: CurrentUser | null;
 };
 
-type TelegramChallengeStatusResponse =
-  | { status: "idle" | "pending" | "expired" | "consumed" }
-  | { status: "authenticated"; user: CurrentUser }
-  | { status: "error"; error: string; details?: string };
-
 const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME;
+
+declare global {
+  interface Window {
+    onTelegramAuth?: (user: TelegramAuthPayload) => void;
+  }
+}
 
 export function TrainerHeader({ initialUser = null }: Props) {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(initialUser);
   const [error, setError] = useState<string | null>(null);
-  const [isStartingLogin, setIsStartingLogin] = useState(false);
-  const [isAwaitingTelegram, setIsAwaitingTelegram] = useState(false);
-  const [telegramAuthUrl, setTelegramAuthUrl] = useState<string | null>(null);
+  const [isAuthorizing, setIsAuthorizing] = useState(false);
+  const widgetContainerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (initialUser) {
@@ -52,138 +61,71 @@ export function TrainerHeader({ initialUser = null }: Props) {
     void fetchCurrentUser();
   }, [initialUser]);
 
-  const checkLoginStatus = useCallback(async (): Promise<void> => {
-    const response = await fetch("/api/auth/telegram/challenge/status", { credentials: "include" });
-    const data = (await response.json()) as TelegramChallengeStatusResponse;
-
-    if (!response.ok) {
-      if ("status" in data && data.status === "error") {
-        setError(data.details ? `${data.error}: ${data.details}` : data.error);
-      } else {
-        setError("Не удалось проверить статус Telegram-входа");
-      }
-      setIsAwaitingTelegram(false);
-      return;
-    }
-
-    if (data.status === "authenticated") {
-      setCurrentUser(data.user);
-      setError(null);
-      setIsAwaitingTelegram(false);
-      setTelegramAuthUrl(null);
-      return;
-    }
-
-    if (data.status === "pending") {
-      setIsAwaitingTelegram(true);
-      return;
-    }
-
-    if (data.status === "expired") {
-      setError("Время подтверждения в Telegram истекло. Нажми «Войти» и попробуй снова.");
-      setIsAwaitingTelegram(false);
-      return;
-    }
-
-    setIsAwaitingTelegram(false);
-  }, []);
-
-  useEffect(() => {
-    if (!botUsername || currentUser) {
-      return;
-    }
-
-    void checkLoginStatus();
-  }, [checkLoginStatus, currentUser]);
-
-  useEffect(() => {
-    if (!isAwaitingTelegram || currentUser) {
-      return;
-    }
-
-    const interval = window.setInterval(() => {
-      void checkLoginStatus();
-    }, 2000);
-
-    return () => {
-      window.clearInterval(interval);
-    };
-  }, [checkLoginStatus, currentUser, isAwaitingTelegram]);
-
-  useEffect(() => {
-    if (!isAwaitingTelegram || currentUser) {
-      return;
-    }
-
-    const recheck = () => {
-      void checkLoginStatus();
-    };
-
-    const onVisibilityChange = () => {
-      if (document.visibilityState === "visible") {
-        recheck();
-      }
-    };
-
-    window.addEventListener("focus", recheck);
-    window.addEventListener("pageshow", recheck);
-    document.addEventListener("visibilitychange", onVisibilityChange);
-
-    return () => {
-      window.removeEventListener("focus", recheck);
-      window.removeEventListener("pageshow", recheck);
-      document.removeEventListener("visibilitychange", onVisibilityChange);
-    };
-  }, [checkLoginStatus, currentUser, isAwaitingTelegram]);
-
-  const startTelegramLogin = async () => {
-    if (!botUsername || isStartingLogin) {
-      return;
-    }
-
+  const completeTelegramAuth = useCallback(async (payload: TelegramAuthPayload) => {
     setError(null);
-    setTelegramAuthUrl(null);
-    setIsStartingLogin(true);
-    const popup = window.open(`https://t.me/${botUsername}`, "_blank", "noopener,noreferrer");
-
+    setIsAuthorizing(true);
     try {
-      const response = await fetch("/api/auth/telegram/challenge/start", {
+      const response = await fetch("/api/auth/telegram", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         credentials: "include",
+        body: JSON.stringify(payload),
       });
-      const data = (await response.json()) as TelegramChallengeStartResponse;
 
-      if (!response.ok || !data.authUrl) {
-        setError(data.details ? `${data.error}: ${data.details}` : data.error ?? "Не удалось начать Telegram-вход");
-        if (popup) {
-          popup.close();
-        }
+      const data = (await response.json()) as TelegramAuthResponse;
+      if (!response.ok || !data.user) {
+        setError(data.details ? `${data.error}: ${data.details}` : data.error ?? "Не удалось войти через Telegram");
         return;
       }
 
-      if (popup) {
-        popup.location.href = data.authUrl;
-      } else {
-        setTelegramAuthUrl(data.authUrl);
-        setError("Браузер заблокировал pop-up. Нажми «Открыть Telegram» и подтверди вход.");
-      }
-      setIsAwaitingTelegram(true);
+      setCurrentUser(data.user);
+      setError(null);
     } catch {
-      setError("Не удалось связаться с сервером для старта Telegram-входа");
-      if (popup) {
-        popup.close();
-      }
+      setError("Сетевая ошибка при входе через Telegram");
     } finally {
-      setIsStartingLogin(false);
+      setIsAuthorizing(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!botUsername || currentUser || !widgetContainerRef.current) {
+      return;
+    }
+
+    window.onTelegramAuth = (user) => {
+      void completeTelegramAuth(user);
+    };
+
+    const container = widgetContainerRef.current;
+    container.innerHTML = "";
+
+    const script = document.createElement("script");
+    script.src = "https://telegram.org/js/telegram-widget.js?22";
+    script.async = true;
+    script.setAttribute("data-telegram-login", botUsername);
+    script.setAttribute("data-size", "large");
+    script.setAttribute("data-radius", "8");
+    script.setAttribute("data-userpic", "false");
+    script.setAttribute("data-request-access", "write");
+    script.setAttribute("data-lang", "ru");
+    script.setAttribute("data-onauth", "onTelegramAuth(user)");
+    script.onerror = () => {
+      setError("Не удалось загрузить Telegram Login Widget");
+    };
+    container.appendChild(script);
+
+    return () => {
+      if (window.onTelegramAuth) {
+        delete window.onTelegramAuth;
+      }
+      container.innerHTML = "";
+    };
+  }, [completeTelegramAuth, currentUser]);
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     setCurrentUser(null);
     setError(null);
-    setIsAwaitingTelegram(false);
-    setTelegramAuthUrl(null);
   };
 
   return (
@@ -213,15 +155,8 @@ export function TrainerHeader({ initialUser = null }: Props) {
             </div>
           ) : (
             <div className={styles.widget}>
-              <button type="button" className={styles.buttonPrimary} onClick={() => void startTelegramLogin()} disabled={isStartingLogin}>
-                {isStartingLogin ? "Запуск..." : "Войти"}
-              </button>
-              {isAwaitingTelegram && <span className={styles.authWarn}>Подтверди вход в боте, затем вернись на сайт.</span>}
-              {telegramAuthUrl && (
-                <a href={telegramAuthUrl} target="_blank" rel="noopener noreferrer" className={styles.buttonGhost}>
-                  Открыть Telegram
-                </a>
-              )}
+              <div ref={widgetContainerRef} className={styles.telegramWidgetSlot} />
+              {isAuthorizing && <span className={styles.authWarn}>Входим...</span>}
             </div>
           )}
         </div>

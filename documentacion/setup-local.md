@@ -19,7 +19,6 @@ npm install
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY`
    - `TELEGRAM_BOT_TOKEN`
-   - `TELEGRAM_WEBHOOK_SECRET`
    - `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME`
 
 ### Telegram Login и домен
@@ -31,22 +30,6 @@ npm install
 1. **Туннель с HTTPS** (удобно для dev): [ngrok](https://ngrok.com/), Cloudflare Tunnel (`cloudflared`), LocalTunnel и т.п. Поднимаешь `npm run dev`, запускаешь туннель на порт 3000, получаешь хост вида `xxxx.ngrok-free.app`. В BotFather в Domain указываешь **только этот хост** (без `https://`). Страницу открываешь по URL туннеля, не по `localhost`.
 
 2. **Только Vercel**: деплой на `*.vercel.app`, в BotFather — тот же хост.
-
-### Telegram webhook для deep-link входа
-
-После деплоя нужно один раз зарегистрировать webhook у Telegram:
-
-```bash
-curl -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook" \
-  -d "url=https://<your-domain>/api/auth/telegram/webhook" \
-  -d "secret_token=${TELEGRAM_WEBHOOK_SECRET}"
-```
-
-Проверка:
-
-```bash
-curl "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo"
-```
 
 Подробнее: `product/auth.md`.
 

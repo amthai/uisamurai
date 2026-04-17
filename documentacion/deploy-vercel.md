@@ -24,7 +24,6 @@
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Только для server-side; **не** префикс `NEXT_PUBLIC_` |
 | `TELEGRAM_BOT_TOKEN` | Секрет бота |
-| `TELEGRAM_WEBHOOK_SECRET` | Секрет проверки входящих webhook от Telegram |
 | `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` | Username бота без `@` |
 
 Опционально для Prisma/CLI-скриптов на CI, если появятся:
@@ -35,22 +34,10 @@
 
 ## Telegram вход на прод-домене
 
-Для deep-link входа и webhook обязательно:
+Для Telegram Login Widget обязательно:
 
 - Домен в BotFather должен совпадать с хостом деплоя (например `xxx.vercel.app` или свой домен).
-- После смены домена или первого деплоя обновить webhook:
-
-```bash
-curl -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/setWebhook" \
-  -d "url=https://<your-domain>/api/auth/telegram/webhook" \
-  -d "secret_token=${TELEGRAM_WEBHOOK_SECRET}"
-```
-
-Проверка статуса webhook:
-
-```bash
-curl "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getWebhookInfo"
-```
+- В BotFather у бота должен быть указан этот же хост в `Bot Settings / Domain` (без `https://`).
 
 ## База данных
 

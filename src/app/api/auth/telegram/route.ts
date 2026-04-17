@@ -4,43 +4,6 @@ import { SESSION_COOKIE_NAME } from "@/lib/auth/session";
 import { TelegramAuthPayload, verifyTelegramPayload } from "@/lib/auth/telegram";
 import { createSessionForUser, type TelegramUserRow, upsertTelegramUser } from "@/lib/auth/telegram-session";
 
-type TelegramSendMessageResponse = {
-  ok: boolean;
-  description?: string;
-};
-
-type TelegramConfirmationResult = {
-  sent: boolean;
-  error?: string;
-};
-
-async function sendTelegramLoginConfirmation(botToken: string, telegramId: number): Promise<TelegramConfirmationResult> {
-  try {
-    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: telegramId,
-        text: "Вход в UISamurai подтвержден. Если это были не вы, смените пароль в Telegram и отзовите доступ бота.",
-      }),
-      cache: "no-store",
-    });
-
-    const data = (await response.json()) as TelegramSendMessageResponse;
-    if (!response.ok || !data.ok) {
-      return {
-        sent: false,
-        error: data.description ?? `Telegram API request failed with status ${response.status}`,
-      };
-    }
-
-    return { sent: true };
-  } catch (error) {
-    console.error("Failed to send Telegram login confirmation", error);
-    return { sent: false, error: "Network error while sending Telegram confirmation" };
-  }
-}
-
 export async function POST(request: Request) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   if (!botToken) {
@@ -86,12 +49,8 @@ export async function POST(request: Request) {
     expires: expiresAt,
   });
 
-  const telegramConfirmation = await sendTelegramLoginConfirmation(botToken, payload.id);
-
   return NextResponse.json({
     ok: true,
     user,
-    telegramConfirmationSent: telegramConfirmation.sent,
-    telegramConfirmationError: telegramConfirmation.error ?? null,
   });
 }

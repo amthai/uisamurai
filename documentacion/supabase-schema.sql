@@ -26,25 +26,6 @@ create table if not exists public.sessions (
 create index if not exists idx_sessions_user_id on public.sessions (user_id);
 create index if not exists idx_sessions_expires_at on public.sessions (expires_at);
 
-create table if not exists public.telegram_login_challenges (
-  nonce_hash text primary key,
-  telegram_id bigint,
-  first_name text,
-  last_name text,
-  username text,
-  photo_url text,
-  confirmed_at timestamptz,
-  consumed_at timestamptz,
-  expires_at timestamptz not null,
-  created_at timestamptz not null default now()
-);
-
-create index if not exists idx_tg_login_challenges_expires_at
-  on public.telegram_login_challenges (expires_at);
-
-create index if not exists idx_tg_login_challenges_consumed_at
-  on public.telegram_login_challenges (consumed_at);
-
 create or replace function public.set_updated_at()
 returns trigger
 language plpgsql

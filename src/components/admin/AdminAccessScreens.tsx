@@ -6,7 +6,7 @@ export function AdminNeedLogin() {
     <div className={styles.emptyState}>
       <h1 className={styles.h1}>Админка</h1>
       <p className={styles.muted}>
-        Сначала войди через Telegram на главной: открой сайт, нажми «Log in» в шапке, затем снова зайди на{" "}
+        Сначала войди через Telegram на главной: нажми кнопку входа Telegram в шапке, затем снова зайди на{" "}
         <strong>/admin</strong>.
       </p>
       <p>
