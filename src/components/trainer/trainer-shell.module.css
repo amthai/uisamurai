@@ -507,8 +507,8 @@
   position: absolute;
   left: 20px;
   bottom: 20px;
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border: none;
   border-radius: 9999px;
   background: #fff;
@@ -527,11 +527,21 @@
   outline-offset: 2px;
 }
 
+.attachIcon {
+  width: 24px;
+  height: 24px;
+  display: block;
+}
+
 .textareaSendBtn {
   position: absolute;
   right: 20px;
   bottom: 20px;
   border-radius: 9999px;
+  height: 44px;
+  padding: 0 1rem;
+  display: inline-flex;
+  align-items: center;
 }
 
 .attachPreviewList {
@@ -558,19 +568,23 @@
 
 .attachPreviewRemove {
   position: absolute;
-  top: -7px;
-  right: -7px;
-  width: 20px;
-  height: 20px;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
   border: none;
   border-radius: 9999px;
-  background: #1c1c1c;
-  color: #fff;
-  font-size: 15px;
-  line-height: 1;
+  background: #fff;
   cursor: pointer;
   display: inline-grid;
   place-items: center;
+  padding: 0;
+}
+
+.attachPreviewRemoveIcon {
+  width: 16px;
+  height: 16px;
+  display: block;
 }
 
 .commentSkeletonList {
@@ -638,6 +652,16 @@
   width: 70px;
   height: 70px;
   margin-top: 0.55rem;
+  border: none;
+  background: transparent;
+  padding: 0;
+  cursor: zoom-in;
+  border-radius: 12px;
+}
+
+.commentAttachmentOne:focus-visible {
+  outline: 2px solid #d8d8d8;
+  outline-offset: 2px;
 }
 
 .commentAttachmentImg {
@@ -658,6 +682,96 @@
   font-size: 0.72rem;
   padding: 0.2rem 0.4rem;
   line-height: 1;
+}
+
+.galleryOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: grid;
+  place-items: center;
+}
+
+.galleryBackdrop {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: rgb(0 0 0 / 70%);
+  cursor: pointer;
+}
+
+.galleryDialog {
+  position: relative;
+  z-index: 1;
+  max-width: min(92vw, 1200px);
+  max-height: 90vh;
+  display: grid;
+  place-items: center;
+}
+
+.galleryImage {
+  max-width: min(92vw, 1200px);
+  max-height: 90vh;
+  width: auto;
+  height: auto;
+  border-radius: 16px;
+  display: block;
+}
+
+.galleryClose {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 85%);
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  cursor: pointer;
+}
+
+.galleryCloseIcon {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.galleryNav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 9999px;
+  background: rgb(255 255 255 / 85%);
+  font-size: 30px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.galleryNavPrev {
+  left: 10px;
+}
+
+.galleryNavNext {
+  right: 10px;
+}
+
+.galleryCounter {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  background: rgb(0 0 0 / 60%);
+  color: #fff;
+  font-size: 0.78rem;
+  line-height: 1;
+  padding: 0.28rem 0.5rem;
 }
 
 .commentActions {

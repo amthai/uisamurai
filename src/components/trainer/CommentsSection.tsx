@@ -112,6 +112,8 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
   const [attachments, setAttachments] = useState<DraftAttachment[]>([]);
   const [replyTo, setReplyTo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [galleryItems, setGalleryItems] = useState<string[] | null>(null);
+  const [galleryIndex, setGalleryIndex] = useState(0);
   const reactionPending = useRef(new Set<string>());
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -166,6 +168,31 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
     },
     [],
   );
+
+  useEffect(() => {
+    if (!galleryItems) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setGalleryItems(null);
+        return;
+      }
+      if (event.key === "ArrowRight" && galleryItems.length > 1) {
+        setGalleryIndex((prev) => (prev + 1) % galleryItems.length);
+      }
+      if (event.key === "ArrowLeft" && galleryItems.length > 1) {
+        setGalleryIndex((prev) => (prev - 1 + galleryItems.length) % galleryItems.length);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [galleryItems]);
+
+  const openGallery = (urls: string[], index = 0) => {
+    setGalleryItems(urls);
+    setGalleryIndex(index);
+  };
 
   const removeAttachment = (id: string) => {
     setAttachments((prev) => {
@@ -357,16 +384,7 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
             aria-label="Прикрепить изображение"
             onClick={() => fileInputRef.current?.click()}
           >
-            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-              <path
-                d="M16.5 6.5L8.9 14.1C7.73 15.28 7.73 17.18 8.9 18.35C10.08 19.53 11.98 19.53 13.15 18.35L20.05 11.45C22.01 9.49 22.01 6.31 20.05 4.35C18.09 2.38 14.91 2.38 12.95 4.35L5.35 11.95C2.61 14.68 2.61 19.12 5.35 21.85C8.08 24.58 12.52 24.58 15.25 21.85L21.44 15.66"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.7"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <img src="/icons/comment-attach.svg" alt="" aria-hidden="true" className={styles.attachIcon} />
           </button>
           <button
             type="button"
@@ -393,7 +411,7 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
                   aria-label="Убрать картинку"
                   onClick={() => removeAttachment(attachment.id)}
                 >
-                  ×
+                  <img src="/icons/comment-close.svg" alt="" aria-hidden="true" className={styles.attachPreviewRemoveIcon} />
                 </button>
               </li>
             ))}
@@ -420,7 +438,12 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
               </div>
               {c.body ? <p className={styles.commentBody}>{c.body}</p> : null}
               {c.attachments.length > 0 && (
-                <div className={styles.commentAttachmentOne}>
+                <button
+                  type="button"
+                  className={styles.commentAttachmentOne}
+                  aria-label="Открыть вложение"
+                  onClick={() => openGallery(c.attachments.map((attachment) => attachment.url))}
+                >
                   <img
                     src={c.attachments[0]!.url}
                     alt="Вложение комментария"
@@ -430,7 +453,7 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
                   {c.attachments.length > 1 && (
                     <span className={styles.commentAttachmentCounter}>+{c.attachments.length - 1}</span>
                   )}
-                </div>
+                </button>
               )}
               <div className={styles.commentActions}>
                 <button
@@ -477,7 +500,12 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
                       </div>
                       {r.body ? <p className={styles.commentBody}>{r.body}</p> : null}
                       {r.attachments.length > 0 && (
-                        <div className={styles.commentAttachmentOne}>
+                        <button
+                          type="button"
+                          className={styles.commentAttachmentOne}
+                          aria-label="Открыть вложение"
+                          onClick={() => openGallery(r.attachments.map((attachment) => attachment.url))}
+                        >
                           <img
                             src={r.attachments[0]!.url}
                             alt="Вложение комментария"
@@ -487,7 +515,7 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
                           {r.attachments.length > 1 && (
                             <span className={styles.commentAttachmentCounter}>+{r.attachments.length - 1}</span>
                           )}
-                        </div>
+                        </button>
                       )}
                       <div className={styles.commentActions}>
                         <button
@@ -518,6 +546,56 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
             </li>
           ))}
         </ul>
+      )}
+      {galleryItems && (
+        <div className={styles.galleryOverlay} role="dialog" aria-modal="true" aria-label="Просмотр изображений">
+          <button
+            type="button"
+            className={styles.galleryBackdrop}
+            aria-label="Закрыть галерею"
+            onClick={() => setGalleryItems(null)}
+          />
+          <div className={styles.galleryDialog}>
+            <img
+              src={galleryItems[galleryIndex] ?? ""}
+              alt="Изображение комментария"
+              className={styles.galleryImage}
+            />
+            <button
+              type="button"
+              className={styles.galleryClose}
+              aria-label="Закрыть"
+              onClick={() => setGalleryItems(null)}
+            >
+              <img src="/icons/comment-close.svg" alt="" aria-hidden="true" className={styles.galleryCloseIcon} />
+            </button>
+            {galleryItems.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className={`${styles.galleryNav} ${styles.galleryNavPrev}`}
+                  aria-label="Предыдущее изображение"
+                  onClick={() =>
+                    setGalleryIndex((prev) => (prev - 1 + galleryItems.length) % galleryItems.length)
+                  }
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.galleryNav} ${styles.galleryNavNext}`}
+                  aria-label="Следующее изображение"
+                  onClick={() => setGalleryIndex((prev) => (prev + 1) % galleryItems.length)}
+                >
+                  ›
+                </button>
+                <div className={styles.galleryCounter}>
+                  {galleryIndex + 1}/{galleryItems.length}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       )}
     </section>
   );
