@@ -15,6 +15,13 @@ type TelegramUserPayload = {
   hash: string;
 };
 
+type TelegramAuthResponse = {
+  ok?: boolean;
+  error?: string;
+  details?: string;
+  telegramConfirmationSent?: boolean;
+};
+
 export type CurrentUser = {
   id: string;
   first_name: string;
@@ -63,11 +70,15 @@ export function TrainerHeader({ initialUser = null }: Props) {
         credentials: "include",
         body: JSON.stringify(user),
       });
+      const data = (await response.json()) as TelegramAuthResponse;
 
       if (!response.ok) {
-        const data = (await response.json()) as { error?: string; details?: string };
         setError(data.details ? `${data.error}: ${data.details}` : data.error ?? "Auth failed");
         return;
+      }
+
+      if (data.telegramConfirmationSent === false) {
+        setError("Вход выполнен, но Telegram не принял сообщение подтверждения. Напиши /start боту и попробуй снова.");
       }
 
       const meResponse = await fetch("/api/auth/me", { credentials: "include" });

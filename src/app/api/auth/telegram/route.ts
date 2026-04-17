@@ -13,6 +13,31 @@ type UserRow = {
   photo_url: string | null;
 };
 
+type TelegramSendMessageResponse = {
+  ok: boolean;
+  description?: string;
+};
+
+async function sendTelegramLoginConfirmation(botToken: string, telegramId: number): Promise<boolean> {
+  try {
+    const response = await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: telegramId,
+        text: "Вход в UISamurai подтвержден. Если это были не вы, смените пароль в Telegram и отзовите доступ бота.",
+      }),
+      cache: "no-store",
+    });
+
+    const data = (await response.json()) as TelegramSendMessageResponse;
+    return response.ok && data.ok;
+  } catch (error) {
+    console.error("Failed to send Telegram login confirmation", error);
+    return false;
+  }
+}
+
 export async function POST(request: Request) {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   if (!botToken) {
@@ -83,5 +108,7 @@ export async function POST(request: Request) {
     expires: expiresAt,
   });
 
-  return NextResponse.json({ ok: true, user });
+  const telegramConfirmationSent = await sendTelegramLoginConfirmation(botToken, payload.id);
+
+  return NextResponse.json({ ok: true, user, telegramConfirmationSent });
 }
