@@ -37,6 +37,7 @@ export function TrainerHeader({ initialUser = null }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [isStartingLogin, setIsStartingLogin] = useState(false);
   const [isAwaitingTelegram, setIsAwaitingTelegram] = useState(false);
+  const [telegramAuthUrl, setTelegramAuthUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (initialUser) {
@@ -69,6 +70,7 @@ export function TrainerHeader({ initialUser = null }: Props) {
       setCurrentUser(data.user);
       setError(null);
       setIsAwaitingTelegram(false);
+      setTelegramAuthUrl(null);
       return;
     }
 
@@ -108,12 +110,39 @@ export function TrainerHeader({ initialUser = null }: Props) {
     };
   }, [checkLoginStatus, currentUser, isAwaitingTelegram]);
 
+  useEffect(() => {
+    if (!isAwaitingTelegram || currentUser) {
+      return;
+    }
+
+    const recheck = () => {
+      void checkLoginStatus();
+    };
+
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        recheck();
+      }
+    };
+
+    window.addEventListener("focus", recheck);
+    window.addEventListener("pageshow", recheck);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    return () => {
+      window.removeEventListener("focus", recheck);
+      window.removeEventListener("pageshow", recheck);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [checkLoginStatus, currentUser, isAwaitingTelegram]);
+
   const startTelegramLogin = async () => {
     if (!botUsername || isStartingLogin) {
       return;
     }
 
     setError(null);
+    setTelegramAuthUrl(null);
     setIsStartingLogin(true);
     const popup = window.open("", "_blank", "noopener,noreferrer");
 
@@ -135,7 +164,8 @@ export function TrainerHeader({ initialUser = null }: Props) {
       if (popup) {
         popup.location.href = data.authUrl;
       } else {
-        window.location.href = data.authUrl;
+        setTelegramAuthUrl(data.authUrl);
+        setError("Браузер заблокировал pop-up. Нажми «Открыть Telegram» и подтверди вход.");
       }
       setIsAwaitingTelegram(true);
     } catch {
@@ -153,6 +183,7 @@ export function TrainerHeader({ initialUser = null }: Props) {
     setCurrentUser(null);
     setError(null);
     setIsAwaitingTelegram(false);
+    setTelegramAuthUrl(null);
   };
 
   return (
@@ -186,6 +217,11 @@ export function TrainerHeader({ initialUser = null }: Props) {
                 {isStartingLogin ? "Запуск..." : "Войти"}
               </button>
               {isAwaitingTelegram && <span className={styles.authWarn}>Подтверди вход в боте, затем вернись на сайт.</span>}
+              {telegramAuthUrl && (
+                <a href={telegramAuthUrl} target="_blank" rel="noopener noreferrer" className={styles.buttonGhost}>
+                  Открыть Telegram
+                </a>
+              )}
             </div>
           )}
         </div>
