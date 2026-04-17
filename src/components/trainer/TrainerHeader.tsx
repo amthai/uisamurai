@@ -144,7 +144,7 @@ export function TrainerHeader({ initialUser = null }: Props) {
     setError(null);
     setTelegramAuthUrl(null);
     setIsStartingLogin(true);
-    const popup = window.open("", "_blank", "noopener,noreferrer");
+    const popup = window.open(`https://t.me/${botUsername}`, "_blank", "noopener,noreferrer");
 
     try {
       const response = await fetch("/api/auth/telegram/challenge/start", {
