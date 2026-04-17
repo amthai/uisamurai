@@ -65,7 +65,7 @@
 }
 
 .brandLogo {
-  width: min(240px, 56vw);
+  width: min(80px, 56vw);
   height: auto;
   display: block;
 }

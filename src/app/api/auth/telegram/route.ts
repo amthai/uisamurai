@@ -1,17 +1,8 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { SESSION_COOKIE_NAME, generateSessionToken, getSessionExpiryDate, hashSessionToken } from "@/lib/auth/session";
+import { SESSION_COOKIE_NAME } from "@/lib/auth/session";
 import { TelegramAuthPayload, verifyTelegramPayload } from "@/lib/auth/telegram";
-import { supabaseServer } from "@/lib/supabase/server";
-
-type UserRow = {
-  id: string;
-  telegram_id: number;
-  first_name: string;
-  last_name: string | null;
-  username: string | null;
-  photo_url: string | null;
-};
+import { createSessionForUser, type TelegramUserRow, upsertTelegramUser } from "@/lib/auth/telegram-session";
 
 type TelegramSendMessageResponse = {
   ok: boolean;
@@ -66,45 +57,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Telegram auth verification failed" }, { status: 401 });
   }
 
-  const userData = {
-    telegram_id: payload.id,
-    first_name: payload.first_name,
-    last_name: payload.last_name ?? null,
-    username: payload.username ?? null,
-    photo_url: payload.photo_url ?? null,
-  };
-
-  const { data: user, error: userError } = await supabaseServer
-    .from("users")
-    .upsert(userData, { onConflict: "telegram_id" })
-    .select("id, telegram_id, first_name, last_name, username, photo_url")
-    .single<UserRow>();
-
-  if (userError || !user) {
+  let user: TelegramUserRow;
+  let token: string;
+  let expiresAt: Date;
+  try {
+    user = await upsertTelegramUser(payload);
+    const session = await createSessionForUser(user.id);
+    token = session.token;
+    expiresAt = session.expiresAt;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to complete Telegram auth";
     return NextResponse.json(
       {
-        error: "Failed to upsert user in users table",
-        details: userError?.message,
-      },
-      { status: 500 },
-    );
-  }
-
-  const token = generateSessionToken();
-  const tokenHash = hashSessionToken(token);
-  const expiresAt = getSessionExpiryDate();
-
-  const { error: sessionError } = await supabaseServer.from("sessions").insert({
-    user_id: user.id,
-    token_hash: tokenHash,
-    expires_at: expiresAt.toISOString(),
-  });
-
-  if (sessionError) {
-    return NextResponse.json(
-      {
-        error: "Failed to create session in sessions table",
-        details: sessionError.message,
+        error: "Failed to complete Telegram auth",
+        details: message,
       },
       { status: 500 },
     );

@@ -2,16 +2,25 @@
 
 ## Метод входа
 
-- Только Telegram Login в v1.
+- Только Telegram в v1.
 - Supabase Auth не используется.
 
-## Домен для Telegram Login Widget
+## Текущий поток входа
 
-Виджет сравнивает **хост страницы** с полем **Domain** у бота (настройки в BotFather / раздел Web Login).
+1. Пользователь нажимает кнопку «Войти».
+2. Сервер создает challenge (одноразовый `nonce`, TTL 5 минут), сохраняет `nonce_hash` в `telegram_login_challenges`.
+3. Фронт открывает deep-link в бота: `https://t.me/<bot>?start=login_<nonce>`.
+4. Бот присылает update в `/api/auth/telegram/webhook`, сервер подтверждает challenge по `nonce_hash`.
+5. Фронт поллит `/api/auth/telegram/challenge/status`.
+6. После подтверждения сервер делает upsert пользователя, создает запись в `sessions` и ставит httpOnly cookie.
 
-- **`localhost` в BotFather часто недоступен** — интерфейс показывает «Domain is invalid». Это ограничение Telegram, не проекта.
-- Для разработки: **HTTPS-туннель** на `localhost:3000` (ngrok, Cloudflare Tunnel и т.д.) → в Domain указать **хост туннеля** (например `abc123.ngrok-free.app`).
-- Для превью/прода: домен Vercel (`uisamurai.vercel.app`) или свой домен — тот же хост должен быть в BotFather.
+## Конфигурация Telegram
+
+- `NEXT_PUBLIC_TELEGRAM_BOT_USERNAME` — username бота без `@`.
+- `TELEGRAM_BOT_TOKEN` — токен бота.
+- `TELEGRAM_WEBHOOK_SECRET` — секрет проверки заголовка `X-Telegram-Bot-Api-Secret-Token`.
+
+Webhook должен быть установлен на `https://<domain>/api/auth/telegram/webhook`.
 
 ## Что доступно без логина
 
@@ -24,17 +33,10 @@
 - Комментарии и ответы.
 - Реакции на комментарии.
 
-## Серверный поток
-
-1. Фронт получает Telegram payload.
-2. Бэкенд проверяет `hash` через `TELEGRAM_BOT_TOKEN`.
-3. Upsert пользователя в `users` по `telegram_id`.
-4. Создание сессии в `sessions` и установка httpOnly cookie.
-
 ## Рендер в хедере
 
 - Хедер инициализируется пользователем с сервера (`getSessionUser`) уже на первом SSR-рендере.
-- Кнопка Telegram видна только если серверная сессия отсутствует.
+- Кнопка входа видна только если серверная сессия отсутствует.
 - Дополнительный клиентский запрос `/api/auth/me` выполняется только как fallback, когда `initialUser` не передан.
 
 ## Админ

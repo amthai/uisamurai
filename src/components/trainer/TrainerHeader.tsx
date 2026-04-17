@@ -1,26 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import styles from "./trainer-shell.module.css";
 
-type TelegramUserPayload = {
-  id: number;
-  first_name: string;
-  last_name?: string;
-  username?: string;
-  photo_url?: string;
-  auth_date: number;
-  hash: string;
-};
-
-type TelegramAuthResponse = {
+type TelegramChallengeStartResponse = {
   ok?: boolean;
+  authUrl?: string;
+  expiresAt?: string;
   error?: string;
   details?: string;
-  telegramConfirmationSent?: boolean;
-  telegramConfirmationError?: string | null;
 };
 
 export type CurrentUser = {
@@ -35,17 +25,18 @@ type Props = {
   initialUser?: CurrentUser | null;
 };
 
-declare global {
-  interface Window {
-    onTelegramAuth?: (user: TelegramUserPayload) => void;
-  }
-}
+type TelegramChallengeStatusResponse =
+  | { status: "idle" | "pending" | "expired" | "consumed" }
+  | { status: "authenticated"; user: CurrentUser }
+  | { status: "error"; error: string; details?: string };
 
 const botUsername = process.env.NEXT_PUBLIC_TELEGRAM_BOT_USERNAME;
 
 export function TrainerHeader({ initialUser = null }: Props) {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(initialUser);
   const [error, setError] = useState<string | null>(null);
+  const [isStartingLogin, setIsStartingLogin] = useState(false);
+  const [isAwaitingTelegram, setIsAwaitingTelegram] = useState(false);
 
   useEffect(() => {
     if (initialUser) {
@@ -60,63 +51,108 @@ export function TrainerHeader({ initialUser = null }: Props) {
     void fetchCurrentUser();
   }, [initialUser]);
 
-  useEffect(() => {
-    if (!botUsername || currentUser) return;
+  const checkLoginStatus = useCallback(async (): Promise<void> => {
+    const response = await fetch("/api/auth/telegram/challenge/status", { credentials: "include" });
+    const data = (await response.json()) as TelegramChallengeStatusResponse;
 
-    window.onTelegramAuth = async (user: TelegramUserPayload) => {
+    if (!response.ok) {
+      if ("status" in data && data.status === "error") {
+        setError(data.details ? `${data.error}: ${data.details}` : data.error);
+      } else {
+        setError("Не удалось проверить статус Telegram-входа");
+      }
+      setIsAwaitingTelegram(false);
+      return;
+    }
+
+    if (data.status === "authenticated") {
+      setCurrentUser(data.user);
       setError(null);
-      const response = await fetch("/api/auth/telegram", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(user),
-      });
-      const data = (await response.json()) as TelegramAuthResponse;
+      setIsAwaitingTelegram(false);
+      return;
+    }
 
-      if (!response.ok) {
-        setError(data.details ? `${data.error}: ${data.details}` : data.error ?? "Auth failed");
+    if (data.status === "pending") {
+      setIsAwaitingTelegram(true);
+      return;
+    }
+
+    if (data.status === "expired") {
+      setError("Время подтверждения в Telegram истекло. Нажми «Войти» и попробуй снова.");
+      setIsAwaitingTelegram(false);
+      return;
+    }
+
+    setIsAwaitingTelegram(false);
+  }, []);
+
+  useEffect(() => {
+    if (!botUsername || currentUser) {
+      return;
+    }
+
+    void checkLoginStatus();
+  }, [checkLoginStatus, currentUser]);
+
+  useEffect(() => {
+    if (!isAwaitingTelegram || currentUser) {
+      return;
+    }
+
+    const interval = window.setInterval(() => {
+      void checkLoginStatus();
+    }, 2000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, [checkLoginStatus, currentUser, isAwaitingTelegram]);
+
+  const startTelegramLogin = async () => {
+    if (!botUsername || isStartingLogin) {
+      return;
+    }
+
+    setError(null);
+    setIsStartingLogin(true);
+    const popup = window.open("", "_blank", "noopener,noreferrer");
+
+    try {
+      const response = await fetch("/api/auth/telegram/challenge/start", {
+        method: "POST",
+        credentials: "include",
+      });
+      const data = (await response.json()) as TelegramChallengeStartResponse;
+
+      if (!response.ok || !data.authUrl) {
+        setError(data.details ? `${data.error}: ${data.details}` : data.error ?? "Не удалось начать Telegram-вход");
+        if (popup) {
+          popup.close();
+        }
         return;
       }
 
-      if (data.telegramConfirmationSent === false) {
-        const confirmationReason = data.telegramConfirmationError
-          ? `Причина: ${data.telegramConfirmationError}.`
-          : "Причина неизвестна.";
-        setError(`Вход выполнен, но Telegram не принял сообщение подтверждения. ${confirmationReason} Напиши /start боту и попробуй снова.`);
+      if (popup) {
+        popup.location.href = data.authUrl;
+      } else {
+        window.location.href = data.authUrl;
       }
-
-      const meResponse = await fetch("/api/auth/me", { credentials: "include" });
-      const meData = (await meResponse.json()) as { user: CurrentUser | null };
-      setCurrentUser(meData.user);
-    };
-
-    const script = document.createElement("script");
-    script.src = "https://telegram.org/js/telegram-widget.js?22";
-    script.async = true;
-    script.setAttribute("data-telegram-login", botUsername);
-    script.setAttribute("data-size", "large");
-    script.setAttribute("data-userpic", "false");
-    script.setAttribute("data-request-access", "read");
-    script.setAttribute("data-onauth", "onTelegramAuth(user)");
-
-    const container = document.getElementById("telegram-login-widget");
-    if (container) {
-      container.innerHTML = "";
-      container.appendChild(script);
+      setIsAwaitingTelegram(true);
+    } catch {
+      setError("Не удалось связаться с сервером для старта Telegram-входа");
+      if (popup) {
+        popup.close();
+      }
+    } finally {
+      setIsStartingLogin(false);
     }
-
-    return () => {
-      const container = document.getElementById("telegram-login-widget");
-      if (container) {
-        container.innerHTML = "";
-      }
-      delete window.onTelegramAuth;
-    };
-  }, [currentUser]);
+  };
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     setCurrentUser(null);
+    setError(null);
+    setIsAwaitingTelegram(false);
   };
 
   return (
@@ -145,7 +181,12 @@ export function TrainerHeader({ initialUser = null }: Props) {
               </div>
             </div>
           ) : (
-            <div id="telegram-login-widget" className={styles.widget} />
+            <div className={styles.widget}>
+              <button type="button" className={styles.buttonPrimary} onClick={() => void startTelegramLogin()} disabled={isStartingLogin}>
+                {isStartingLogin ? "Запуск..." : "Войти"}
+              </button>
+              {isAwaitingTelegram && <span className={styles.authWarn}>Подтверди вход в боте, затем вернись на сайт.</span>}
+            </div>
           )}
         </div>
       </div>
