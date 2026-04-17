@@ -46,6 +46,7 @@ export function TrainerHeader({ initialUser = null }: Props) {
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(initialUser);
   const [error, setError] = useState<string | null>(null);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const widgetContainerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -80,6 +81,7 @@ export function TrainerHeader({ initialUser = null }: Props) {
 
       setCurrentUser(data.user);
       setError(null);
+      setIsAuthModalOpen(false);
     } catch {
       setError("Сетевая ошибка при входе через Telegram");
     } finally {
@@ -88,7 +90,7 @@ export function TrainerHeader({ initialUser = null }: Props) {
   }, []);
 
   useEffect(() => {
-    if (!botUsername || currentUser || !widgetContainerRef.current) {
+    if (!isAuthModalOpen || !botUsername || currentUser || !widgetContainerRef.current) {
       return;
     }
 
@@ -120,7 +122,22 @@ export function TrainerHeader({ initialUser = null }: Props) {
       }
       container.innerHTML = "";
     };
-  }, [completeTelegramAuth, currentUser]);
+  }, [completeTelegramAuth, currentUser, isAuthModalOpen]);
+
+  useEffect(() => {
+    if (!isAuthModalOpen) {
+      return;
+    }
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsAuthModalOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [isAuthModalOpen]);
 
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
@@ -154,13 +171,59 @@ export function TrainerHeader({ initialUser = null }: Props) {
               </div>
             </div>
           ) : (
-            <div className={styles.widget}>
-              <div ref={widgetContainerRef} className={styles.telegramWidgetSlot} />
-              {isAuthorizing && <span className={styles.authWarn}>Входим...</span>}
-            </div>
+            <button type="button" className={styles.buttonPrimary} onClick={() => setIsAuthModalOpen(true)}>
+              Войти
+            </button>
           )}
         </div>
       </div>
+      {isAuthModalOpen && !currentUser && (
+        <div className={styles.authModalOverlay} role="presentation" onClick={() => setIsAuthModalOpen(false)}>
+          <div
+            className={styles.authModal}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="auth-modal-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className={styles.authModalHead}>
+              <h2 id="auth-modal-title" className={styles.authModalTitle}>
+                Вход в UISamurai
+              </h2>
+              <button
+                type="button"
+                className={styles.authModalClose}
+                onClick={() => setIsAuthModalOpen(false)}
+                aria-label="Закрыть окно входа"
+              >
+                ×
+              </button>
+            </div>
+            <div className={styles.authModalBody}>
+              {error && <span className={styles.authError}>{error}</span>}
+              {!botUsername && <span className={styles.authWarn}>Нет NEXT_PUBLIC_TELEGRAM_BOT_USERNAME</span>}
+              <div className={styles.authOption}>
+                <p className={styles.authOptionTitle}>Telegram</p>
+                <div className={styles.widget}>
+                  <div ref={widgetContainerRef} className={styles.telegramWidgetSlot} />
+                  {isAuthorizing && <span className={styles.authWarn}>Входим...</span>}
+                </div>
+              </div>
+              <div className={styles.authOption}>
+                <p className={styles.authOptionTitle}>Другие варианты</p>
+                <div className={styles.authOptionsList}>
+                  <button type="button" className={styles.buttonGhost} disabled>
+                    Email + код (скоро)
+                  </button>
+                  <button type="button" className={styles.buttonGhost} disabled>
+                    Magic link (скоро)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </header>
   );
 }
