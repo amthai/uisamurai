@@ -76,7 +76,9 @@ function normalizeCommentUrl(rawUrl: string): string | null {
 function renderCommentBody(body: string): ReactNode {
   const nodes: ReactNode[] = [];
   let lastIndex = 0;
-  for (const match of body.matchAll(URL_RE)) {
+  const pattern = new RegExp(URL_RE.source, "gi");
+  let match: RegExpExecArray | null = pattern.exec(body);
+  while (match) {
     const full = match[0];
     const start = match.index ?? 0;
     const end = start + full.length;
@@ -100,6 +102,7 @@ function renderCommentBody(body: string): ReactNode {
       nodes.push(full);
     }
     lastIndex = end;
+    match = pattern.exec(body);
   }
   if (lastIndex < body.length) {
     nodes.push(body.slice(lastIndex));
