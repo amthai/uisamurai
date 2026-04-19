@@ -5,6 +5,7 @@ export const dynamic = "force-dynamic";
 export const fetchCache = "force-no-store";
 import type { JSONContent } from "@tiptap/core";
 import { CommentsSection } from "@/components/trainer/CommentsSection";
+import { AuthModalLink } from "@/components/trainer/AuthModalLink";
 import { RichHtml } from "@/components/trainer/RichHtml";
 import styles from "@/components/trainer/trainer-shell.module.css";
 import { getSessionUser } from "@/lib/auth/get-session-user";
@@ -117,7 +118,7 @@ export default async function TrainerSectionPage(props: Props) {
           <RichHtml html={assignmentHtml} />
         ) : (
           <p className={styles.muted}>
-            Войди через Telegram в шапке, чтобы видеть задание и писать комментарии.
+            <AuthModalLink className={styles.inlineAuthLink}>Войдите</AuthModalLink>, чтобы видеть задания
           </p>
         )}
       </section>

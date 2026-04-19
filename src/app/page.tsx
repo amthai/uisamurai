@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { TrainerHeader, type CurrentUser } from "@/components/trainer/TrainerHeader";
 import styles from "@/components/trainer/trainer-shell.module.css";
@@ -32,36 +31,11 @@ export default async function HomePage() {
         is_admin: user.is_admin,
       }
     : null;
-  let draftHint = false;
-  if (user?.is_admin) {
-    const { count } = await supabaseServer
-      .from("sections")
-      .select("*", { count: "exact", head: true });
-    draftHint = (count ?? 0) > 0;
-  }
-
   return (
     <div className={styles.shell}>
       <TrainerHeader initialUser={currentUser} />
       <main className={styles.emptyState}>
-        <p className={styles.heroLabel}>UISamurai</p>
         <h1 className={styles.h1}>Пока нет опубликованных разделов</h1>
-        {draftHint ? (
-          <p className={styles.muted}>
-            У тебя есть разделы в статусе <strong>черновик</strong>. Открой{" "}
-            <Link href="/admin" className={styles.navLink}>
-              админку
-            </Link>
-            , выбери раздел и включи галочку <strong>«Опубликован»</strong>, затем сохрани.
-          </p>
-        ) : (
-          <p className={styles.muted}>
-            Добавь раздел в админке (нужна роль admin).{" "}
-            <Link href="/admin" className={styles.navLink}>
-              /admin
-            </Link>
-          </p>
-        )}
       </main>
     </div>
   );

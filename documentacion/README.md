@@ -20,7 +20,3 @@
 - `product/comments.md`
 - `product/admin.md`
 - `product/out-of-scope.md`
-
-## Референсы
-
-- Главный экран: `assets/main-screen-reference.png`.

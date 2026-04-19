@@ -18,6 +18,7 @@ export function TiptapField({ label, value, onChange, placeholder }: Props) {
   const mounted = useRef(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const [, toolbarTick] = useState(0);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const editor = useEditor({
     extensions: getEditorExtensions(placeholder),
@@ -56,6 +57,11 @@ export function TiptapField({ label, value, onChange, placeholder }: Props) {
       const file = e.target.files?.[0];
       e.target.value = "";
       if (!file || !editor) return;
+      setUploadError(null);
+      if (file.size > 5 * 1024 * 1024) {
+        setUploadError("Нельзя загружать картинки больше 5 МБ.");
+        return;
+      }
       const fd = new FormData();
       fd.append("file", file);
       const res = await fetch("/api/admin/upload", {
@@ -63,10 +69,15 @@ export function TiptapField({ label, value, onChange, placeholder }: Props) {
         body: fd,
         credentials: "include",
       });
-      if (!res.ok) return;
-      const data = (await res.json()) as { url?: string };
+      const data = (await res.json().catch(() => ({}))) as { url?: string; error?: string };
+      if (!res.ok) {
+        setUploadError(data.error === "File too large" ? "Нельзя загружать картинки больше 5 МБ." : "Не удалось загрузить картинку.");
+        return;
+      }
       if (data.url) {
         editor.chain().focus().setImage({ src: data.url }).run();
+      } else {
+        setUploadError("Не удалось загрузить картинку.");
       }
     },
     [editor],
@@ -175,6 +186,7 @@ export function TiptapField({ label, value, onChange, placeholder }: Props) {
         <p className={styles.dragHint}>
           Наведи на блок — слева появится ⋮⋮, тащи; либо ↑↓ по активному блоку.
         </p>
+        {uploadError ? <p className={styles.uploadError}>{uploadError}</p> : null}
         <EditorContent editor={editor} className={styles.editorInner} />
       </div>
     </div>

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import styles from "./trainer-shell.module.css";
 
 type TelegramAuthPayload = {
@@ -43,6 +44,7 @@ declare global {
 }
 
 export function TrainerHeader({ initialUser = null }: Props) {
+  const router = useRouter();
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(initialUser);
   const [error, setError] = useState<string | null>(null);
   const [isAuthorizing, setIsAuthorizing] = useState(false);
@@ -150,10 +152,24 @@ export function TrainerHeader({ initialUser = null }: Props) {
     return () => window.removeEventListener("keydown", handleEscape);
   }, [isAuthModalOpen]);
 
+  useEffect(() => {
+    const onOpenAuthModal = () => {
+      if (!currentUser) {
+        setIsAuthModalOpen(true);
+      }
+    };
+    window.addEventListener("uisamurai:open-auth-modal", onOpenAuthModal);
+    return () => {
+      window.removeEventListener("uisamurai:open-auth-modal", onOpenAuthModal);
+    };
+  }, [currentUser]);
+
   const logout = async () => {
     await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
     setCurrentUser(null);
     setError(null);
+    setIsAuthModalOpen(false);
+    router.refresh();
   };
 
   const startYandexAuth = () => {

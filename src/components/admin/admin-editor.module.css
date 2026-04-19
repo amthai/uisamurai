@@ -168,3 +168,10 @@
   font-size: 0.75rem;
   color: #6b7280;
 }
+
+.uploadError {
+  margin: 0;
+  padding: 0.35rem 0.75rem 0;
+  font-size: 0.78rem;
+  color: #b91c1c;
+}

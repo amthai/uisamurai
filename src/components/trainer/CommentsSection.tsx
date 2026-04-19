@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { AuthModalLink } from "@/components/trainer/AuthModalLink";
 import styles from "./trainer-shell.module.css";
 
 const MAX_ATTACHMENTS = 10;
@@ -59,6 +60,53 @@ function formatCommentDate(dateIso: string): string {
   return `${day} ${month} ${hour}:${minute}`.trim();
 }
 
+const URL_RE = /((?:https?:\/\/|www\.)[^\s<]+)/gi;
+
+function normalizeCommentUrl(rawUrl: string): string | null {
+  const withProtocol = rawUrl.startsWith("www.") ? `https://${rawUrl}` : rawUrl;
+  try {
+    const url = new URL(withProtocol);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
+function renderCommentBody(body: string): ReactNode {
+  const nodes: ReactNode[] = [];
+  let lastIndex = 0;
+  for (const match of body.matchAll(URL_RE)) {
+    const full = match[0];
+    const start = match.index ?? 0;
+    const end = start + full.length;
+    if (start > lastIndex) {
+      nodes.push(body.slice(lastIndex, start));
+    }
+    const href = normalizeCommentUrl(full);
+    if (href) {
+      nodes.push(
+        <a
+          key={`${start}-${href}`}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer nofollow"
+          className={styles.commentBodyLink}
+        >
+          {full}
+        </a>,
+      );
+    } else {
+      nodes.push(full);
+    }
+    lastIndex = end;
+  }
+  if (lastIndex < body.length) {
+    nodes.push(body.slice(lastIndex));
+  }
+  return nodes;
+}
+
 function patchCommentReactions(
   list: CommentItem[],
   commentId: string,
@@ -114,10 +162,10 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
   const [error, setError] = useState<string | null>(null);
   const [galleryItems, setGalleryItems] = useState<string[] | null>(null);
   const [galleryIndex, setGalleryIndex] = useState(0);
-  const reactionPending = useRef(new Set<string>());
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const attachmentsRef = useRef<DraftAttachment[]>([]);
+  const reactionRequestIdRef = useRef(new Map<string, number>());
 
   const autoResizeTextarea = useCallback((node: HTMLTextAreaElement | null) => {
     if (!node) return;
@@ -276,7 +324,11 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
       }
       if (!res.ok) {
         const data = (await res.json()) as { error?: string };
-        setError(data.error ?? "Ошибка отправки");
+        if (data.error === "Invalid body") {
+          setError("Текс коммента должен быть не более 8000 символов");
+        } else {
+          setError(data.error ?? "Ошибка отправки");
+        }
         return;
       }
       const created = (await res.json()) as { id?: string };
@@ -294,19 +346,16 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
   };
 
   const remove = async (id: string) => {
+    if (!window.confirm("Точно хотите удалить комментарий?")) return;
     const res = await fetch(`/api/comments/${id}`, { method: "DELETE", credentials: "include" });
     if (!res.ok) return;
     await load({ silent: true });
   };
 
   const react = async (commentId: string, type: "like" | "dislike") => {
-    if (reactionPending.current.has(commentId)) return;
-    const snapshot = comments.map((c) => ({
-      ...c,
-      user: { ...c.user },
-    }));
     setComments((list) => patchCommentReactions(list, commentId, type));
-    reactionPending.current.add(commentId);
+    const requestId = (reactionRequestIdRef.current.get(commentId) ?? 0) + 1;
+    reactionRequestIdRef.current.set(commentId, requestId);
     try {
       const res = await fetch(`/api/comments/${commentId}/reactions`, {
         method: "POST",
@@ -314,13 +363,13 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ type }),
       });
-      if (!res.ok) {
-        setComments(snapshot);
+      if (!res.ok && reactionRequestIdRef.current.get(commentId) === requestId) {
+        await load({ silent: true });
       }
     } catch {
-      setComments(snapshot);
-    } finally {
-      reactionPending.current.delete(commentId);
+      if (reactionRequestIdRef.current.get(commentId) === requestId) {
+        await load({ silent: true });
+      }
     }
   };
 
@@ -332,7 +381,9 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
     return (
       <section className={styles.comments}>
         <h2 className={styles.h2}>Комменты</h2>
-        <p className={styles.muted}>Войди через Telegram, чтобы обсуждать материал.</p>
+        <p className={styles.muted}>
+          <AuthModalLink className={styles.inlineAuthLink}>Войдите</AuthModalLink>, чтобы видеть и писать комментарии
+        </p>
       </section>
     );
   }
@@ -436,7 +487,7 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
                 {c.user.username ? <span className={styles.muted}> @{c.user.username}</span> : null}
                 <span className={styles.muted}> · {formatCommentDate(c.created_at)}</span>
               </div>
-              {c.body ? <p className={styles.commentBody}>{c.body}</p> : null}
+              {c.body ? <p className={styles.commentBody}>{renderCommentBody(c.body)}</p> : null}
               {c.attachments.length > 0 && (
                 <button
                   type="button"
@@ -498,7 +549,7 @@ export function CommentsSection({ sectionId, isLoggedIn, currentUserId }: Props)
                         {r.user.username ? <span className={styles.muted}> @{r.user.username}</span> : null}
                         <span className={styles.muted}> · {formatCommentDate(r.created_at)}</span>
                       </div>
-                      {r.body ? <p className={styles.commentBody}>{r.body}</p> : null}
+                      {r.body ? <p className={styles.commentBody}>{renderCommentBody(r.body)}</p> : null}
                       {r.attachments.length > 0 && (
                         <button
                           type="button"

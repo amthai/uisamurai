@@ -431,6 +431,18 @@
   font-size: 0.95rem;
 }
 
+.inlineAuthLink {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  padding: 0;
+  text-decoration: underline;
+  text-underline-offset: 0.08em;
+  cursor: pointer;
+}
+
 .tiptapHtml {
   line-height: auto;
   font-size: 20px;
@@ -737,6 +749,12 @@
   line-height: 1.5;
 }
 
+.commentBodyLink {
+  color: #2563eb;
+  text-decoration: underline;
+  word-break: break-word;
+}
+
 .commentAttachmentOne {
   position: relative;
   width: 70px;
@@ -883,6 +901,7 @@
   color: #1c1c1c;
   text-decoration: none;
   line-height: 1;
+  transition: transform 0.12s ease, background-color 0.12s ease;
 }
 
 .replyActionBtn {
@@ -912,6 +931,7 @@
   color: #1c1c1c;
   text-decoration: none;
   line-height: 1;
+  transition: transform 0.12s ease, background-color 0.12s ease;
 }
 
 .reactionContent {
@@ -924,6 +944,16 @@
   width: 20px;
   height: 20px;
   flex-shrink: 0;
+  transition: transform 0.14s ease;
+}
+
+.linkBtn:hover,
+.reactionOn:hover {
+  transform: translateY(-1px);
+}
+
+.reactionOn .reactionIcon {
+  transform: scale(1.08);
 }
 
 .reactionBtn + .replyActionBtn {
